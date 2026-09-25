@@ -6,7 +6,6 @@ import {
   Activity, 
   IndianRupee, 
   AlertTriangle, 
-  CheckCircle2, 
   Power, 
   TrendingUp,
   Sparkles,
@@ -15,7 +14,10 @@ import {
   Building,
   Clock,
   Layers,
-  Radio
+  Radio,
+  Waves,
+  Gauge,
+  ArrowUpRight
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -43,7 +45,11 @@ export const Dashboard = ({ setActiveTab }) => {
     dailyBudget, 
     setDailyBudget,
     detectedAnomaly,
-    projectedMonthlyCost
+    projectedMonthlyCost,
+    waterLevelPercent,
+    waterVolumeLiters,
+    distanceCm,
+    tankCapacityLiters
   } = useWater();
 
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
@@ -70,7 +76,7 @@ export const Dashboard = ({ setActiveTab }) => {
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200/80 flex items-center gap-1.5 shadow-2xs">
               <Radio className="w-3 h-3 text-cyan-600 animate-pulse" />
-              Ultrasonic Sensor Feed
+              HC-SR04 Ultrasonic Active
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
@@ -229,6 +235,113 @@ export const Dashboard = ({ setActiveTab }) => {
           </div>
         </div>
 
+      </div>
+
+      {/* DYNAMIC TANK WATER LEVEL & VOLUME INDICATOR (HC-SR04 ULTRASONIC SENSOR) */}
+      <div className="glass-panel rounded-2xl p-6 border border-slate-200/90 bg-white shadow-sm relative overflow-hidden">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          
+          {/* Left Description & Real-Time Big Metrics */}
+          <div className="space-y-4 flex-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
+                  <Waves className="w-5 h-5 text-cyan-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Storage Tank Water Level & Volume
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Real-time hydrostatic volume measured continuously by HC-SR04 ultrasonic sensor.
+                  </p>
+                </div>
+              </div>
+
+              {/* Distance badge */}
+              <span className="px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-mono text-xs font-bold shadow-2xs">
+                Sensor Distance: {distanceCm} cm
+              </span>
+            </div>
+
+            {/* Metrics grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1">
+              
+              {/* Level % */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Water Level Fill</span>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-slate-900 font-mono">
+                    {waterLevelPercent}%
+                  </span>
+                </div>
+                <p className="text-[10px] text-cyan-700 font-bold mt-0.5">
+                  {waterLevelPercent >= 85 ? 'Overfill Warning!' : waterLevelPercent >= 70 ? 'High Capacity' : 'Optimal Capacity'}
+                </p>
+              </div>
+
+              {/* Volume Liters */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Current Volume</span>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-cyan-700 font-mono">
+                    {waterVolumeLiters}
+                  </span>
+                  <span className="text-xs font-bold text-cyan-700">Liters</span>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Out of {tankCapacityLiters} L Tank Max
+                </p>
+              </div>
+
+              {/* Tank Headroom */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 col-span-2 sm:col-span-1">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Remaining Buffer</span>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-emerald-700 font-mono">
+                    {(tankCapacityLiters - waterVolumeLiters).toFixed(1)}
+                  </span>
+                  <span className="text-xs font-bold text-emerald-700">Liters</span>
+                </div>
+                <p className="text-[10px] text-emerald-700 font-bold mt-0.5">
+                  Reserve Capacity
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Right Visual Liquid Tank Bar Gauge */}
+          <div className="w-full lg:w-48 shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-50 border border-slate-200">
+            <div className="w-full flex justify-between items-center text-[10px] font-bold text-slate-500 mb-1.5 font-mono">
+              <span>TANK LEVEL</span>
+              <span className="text-cyan-700 font-bold">{waterLevelPercent}%</span>
+            </div>
+
+            {/* Vertical fluid container */}
+            <div className="w-full h-28 bg-slate-200/80 rounded-xl overflow-hidden relative border border-slate-300 p-1 flex items-end">
+              <div 
+                className={`w-full transition-all duration-700 ease-out rounded-lg relative ${
+                  waterLevelPercent >= 85
+                    ? 'bg-gradient-to-t from-rose-600 via-rose-500 to-amber-400 animate-pulse'
+                    : waterLevelPercent >= 70
+                    ? 'bg-gradient-to-t from-cyan-600 via-sky-500 to-cyan-400'
+                    : 'bg-gradient-to-t from-cyan-600 via-sky-500 to-blue-500'
+                }`}
+                style={{ height: `${Math.max(5, waterLevelPercent)}%` }}
+              >
+                {/* Surface shimmer */}
+                <div className="absolute top-0 inset-x-0 h-1.5 bg-white/40 rounded-t-lg animate-pulse" />
+              </div>
+            </div>
+
+            <div className="w-full flex justify-between items-center text-[10px] text-slate-400 mt-1.5 font-mono">
+              <span>0L (Empty)</span>
+              <span>{tankCapacityLiters}L (Full)</span>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {/* REAL-TIME ROLLING TELEMETRY CHART: EXCLUSIVELY FLOW RATE (L/min) */}

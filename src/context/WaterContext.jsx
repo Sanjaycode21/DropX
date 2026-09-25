@@ -39,65 +39,62 @@ const INITIAL_FIXTURES = [
 export const WaterProvider = ({ children }) => {
   const [scenario, setScenario] = useState('NORMAL');
   const [valveState, setValveState] = useState('OPEN');
-  const [flowRate, setFlowRate] = useState(0.0);
-  const [pressure, setPressure] = useState(55.0);
-  const [tdsQuality, setTdsQuality] = useState(138);
-  const [todayUsage, setTodayUsage] = useState(412.6);
-  const [pulseCount, setPulseCount] = useState(3094);
-  const [dailyBudget, setDailyBudget] = useState(500);
+  const [flowRate, setFlowRate] = useState(2.8);
+  const [pressure, setPressure] = useState(48.5);
+  const [tdsQuality, setTdsQuality] = useState(142);
+  const [todayUsage, setTodayUsage] = useState(284.5);
+  const [pulseCount, setPulseCount] = useState(1420);
   const [lastHeartbeat, setLastHeartbeat] = useState(new Date());
+  const [detectedAnomaly, setDetectedAnomaly] = useState(null);
+  const [dailyBudget, setDailyBudget] = useState(450);
 
-  const [realtimeHistory, setRealtimeHistory] = useState(() => {
-    const points = [];
-    const now = new Date();
-    for (let i = 19; i >= 0; i--) {
-      const t = new Date(now.getTime() - i * 2000);
-      points.push({
-        time: t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        flow: Number((2.8 + Math.random() * 1.5).toFixed(1)),
-        pressure: Number((55.0 + Math.random() * 2.0).toFixed(1)),
-        leakRisk: 8
-      });
-    }
-    return points;
-  });
+  const [waterLevelPercent, setWaterLevelPercent] = useState(78.5);
+  const [waterVolumeLiters, setWaterVolumeLiters] = useState(392.5);
+  const [distanceCm, setDistanceCm] = useState(12.4);
+  const [tankCapacityLiters, setTankCapacityLiters] = useState(500);
+
+  const [realtimeHistory, setRealtimeHistory] = useState([
+    { time: '17:40:00', flow: 2.8, leakRisk: 5 },
+    { time: '17:40:05', flow: 2.9, leakRisk: 5 },
+    { time: '17:40:10', flow: 2.7, leakRisk: 5 },
+    { time: '17:40:15', flow: 3.1, leakRisk: 5 },
+    { time: '17:40:20', flow: 2.8, leakRisk: 5 },
+    { time: '17:40:25', flow: 2.6, leakRisk: 5 },
+    { time: '17:40:30', flow: 2.9, leakRisk: 5 },
+    { time: '17:40:35', flow: 2.8, leakRisk: 5 },
+    { time: '17:40:40', flow: 3.0, leakRisk: 5 },
+    { time: '17:40:45', flow: 2.8, leakRisk: 5 }
+  ]);
 
   const [notifications, setNotifications] = useState([
     {
-      id: 'notif-1',
+      id: 'n1',
       type: 'info',
-      title: 'Water Quality Normal',
-      message: 'Total Dissolved Solids (TDS) at 138 ppm. Water purity level is Optimal.',
-      timestamp: '10 mins ago',
-      read: false,
-    },
-    {
-      id: 'notif-2',
-      type: 'tip',
-      title: 'Conservation Milestone',
-      message: 'Yesterday your household stayed 12% below your target water budget. Keep it up!',
-      timestamp: '2 hours ago',
-      read: true,
+      title: 'Ultrasonic Sensor Connected',
+      message: 'HC-SR04 telemetry stream active (ws://localhost:3001).',
+      timestamp: '2 mins ago',
+      read: false
     }
   ]);
-
-  const [detectedAnomaly, setDetectedAnomaly] = useState(null);
 
   // Handle Scenario switching effect when hardware feed is idle or simulated
   useEffect(() => {
     let interval;
     let baseFlow = 2.8;
     let anomalyObj = null;
+    let targetLevel = 78.5;
 
     switch (scenario) {
       case 'SHOWER':
         baseFlow = 11.5;
+        targetLevel = 65.0;
         break;
       case 'MICRO_LEAK':
         baseFlow = 1.8;
+        targetLevel = 45.0;
         anomalyObj = {
           severity: 'WARNING',
-          zone: 'Master Ensuite (Zone 2)',
+          zone: 'Master Ensuite Tank (Zone 2)',
           type: 'Silent Micro-Leak Detected',
           estimatedLoss: '1.8 L/min continuous trickle',
           confidence: 94.2,
@@ -106,24 +103,28 @@ export const WaterProvider = ({ children }) => {
         break;
       case 'BURST_PIPE':
         baseFlow = 45.0;
+        targetLevel = 92.0;
         anomalyObj = {
           severity: 'CRITICAL',
-          zone: 'Main Baseway Line (Zone 1)',
-          type: 'Catastrophic Pipe Rupture Alert',
+          zone: 'Water Storage Tank (Ultrasonic Node)',
+          type: 'Catastrophic Level Overfill / Pipe Rupture Alert',
           estimatedLoss: '45.0 L/min high volume surge',
           confidence: 99.8,
-          advice: 'Main pipe rupture confirmed. Emergency shutoff advised.'
+          advice: 'Main line surge confirmed. Immediate water shutoff advised.'
         };
         break;
       case 'IRRIGATION':
         baseFlow = 22.0;
+        targetLevel = 55.0;
         break;
       case 'ECO':
         baseFlow = 1.2;
+        targetLevel = 82.0;
         break;
       case 'NORMAL':
       default:
         baseFlow = 2.8;
+        targetLevel = 78.5;
         anomalyObj = null;
         break;
     }
@@ -135,7 +136,7 @@ export const WaterProvider = ({ children }) => {
     setFlowRate(baseFlow);
     setDetectedAnomaly(anomalyObj);
 
-    // Continuous tick simulator for smooth graphs when WebSocket is idle
+    // Continuous tick simulator for smooth graphs and tank level/volume updates when WebSocket is idle
     interval = setInterval(() => {
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -145,6 +146,18 @@ export const WaterProvider = ({ children }) => {
       if (valveState === 'OPEN') {
         setFlowRate(currentFlowNoise);
         setTodayUsage(prev => Number((prev + (currentFlowNoise / 60) * 0.05).toFixed(2)));
+
+        // Gently animate water level & volume
+        setWaterLevelPercent(prev => {
+          const delta = (Math.random() * 0.4 - 0.2);
+          const nextVal = Math.min(100, Math.max(5, prev + delta));
+          const rounded = Number(nextVal.toFixed(1));
+          
+          setWaterVolumeLiters(Number(((rounded / 100) * tankCapacityLiters).toFixed(1)));
+          setDistanceCm(Number((30.0 - (rounded / 100.0) * 25.0).toFixed(1)));
+
+          return rounded;
+        });
       } else {
         setFlowRate(0.0);
       }
@@ -160,7 +173,7 @@ export const WaterProvider = ({ children }) => {
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [scenario, valveState]);
+  }, [scenario, valveState, tankCapacityLiters]);
 
   // WebSocket listener for real ESP32 telemetry from server/index.js
   useEffect(() => {
@@ -186,6 +199,16 @@ export const WaterProvider = ({ children }) => {
             const levelPercent = data.water_level_percent ?? data.percentage ?? 0;
             const volumeLiters = data.water_volume_liters ?? (data.water_volume_ml ? data.water_volume_ml / 1000 : 0);
             const dist = data.distance_cm ?? data.distance ?? 0;
+
+            if (dist > 0) setDistanceCm(Number(dist.toFixed(1)));
+            if (levelPercent > 0) {
+              setWaterLevelPercent(Number(levelPercent.toFixed(1)));
+              setWaterVolumeLiters(Number(((levelPercent / 100) * tankCapacityLiters).toFixed(1)));
+            } else if (volumeLiters > 0) {
+              setWaterVolumeLiters(Number(volumeLiters.toFixed(1)));
+              const derivedPct = Number(((volumeLiters / tankCapacityLiters) * 100).toFixed(1));
+              setWaterLevelPercent(derivedPct);
+            }
             
             // Extract raw flow rate directly from hardware telemetry if available
             const rawFlow = data.flow_rate ?? data.flowRate ?? data.flow ?? (levelPercent > 0 ? Number((levelPercent * 0.3).toFixed(1)) : 0);
@@ -253,7 +276,7 @@ export const WaterProvider = ({ children }) => {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (ws) ws.close();
     };
-  }, []);
+  }, [tankCapacityLiters]);
 
   const toggleValve = () => {
     if (valveState === 'OPEN') {
@@ -349,6 +372,11 @@ export const WaterProvider = ({ children }) => {
       detectedAnomaly,
       dailyBudget,
       setDailyBudget,
+      waterLevelPercent,
+      waterVolumeLiters,
+      distanceCm,
+      tankCapacityLiters,
+      setTankCapacityLiters,
       hourlyData: INITIAL_HOURLY,
       weeklyData: INITIAL_WEEKLY,
       fixturesData: INITIAL_FIXTURES,
@@ -363,3 +391,4 @@ export const WaterProvider = ({ children }) => {
 };
 
 export const useWater = () => useContext(WaterContext);
+
