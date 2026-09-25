@@ -83,6 +83,85 @@ export const WaterProvider = ({ children }) => {
 
   const [detectedAnomaly, setDetectedAnomaly] = useState(null);
 
+  // Handle Scenario switching effect when hardware feed is idle or simulated
+  useEffect(() => {
+    let interval;
+    let baseFlow = 2.8;
+    let anomalyObj = null;
+
+    switch (scenario) {
+      case 'SHOWER':
+        baseFlow = 11.5;
+        break;
+      case 'MICRO_LEAK':
+        baseFlow = 1.8;
+        anomalyObj = {
+          severity: 'WARNING',
+          zone: 'Master Ensuite (Zone 2)',
+          type: 'Silent Micro-Leak Detected',
+          estimatedLoss: '1.8 L/min continuous trickle',
+          confidence: 94.2,
+          advice: 'Check flapper valve in Master Bath toilet tank.'
+        };
+        break;
+      case 'BURST_PIPE':
+        baseFlow = 45.0;
+        anomalyObj = {
+          severity: 'CRITICAL',
+          zone: 'Main Baseway Line (Zone 1)',
+          type: 'Catastrophic Pipe Rupture Alert',
+          estimatedLoss: '45.0 L/min high volume surge',
+          confidence: 99.8,
+          advice: 'Main pipe rupture confirmed. Emergency shutoff advised.'
+        };
+        break;
+      case 'IRRIGATION':
+        baseFlow = 22.0;
+        break;
+      case 'ECO':
+        baseFlow = 1.2;
+        break;
+      case 'NORMAL':
+      default:
+        baseFlow = 2.8;
+        anomalyObj = null;
+        break;
+    }
+
+    if (valveState !== 'OPEN') {
+      baseFlow = 0.0;
+    }
+
+    setFlowRate(baseFlow);
+    setDetectedAnomaly(anomalyObj);
+
+    // Continuous tick simulator for smooth graphs when WebSocket is idle
+    interval = setInterval(() => {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      
+      const currentFlowNoise = baseFlow > 0 ? Number((baseFlow + (Math.random() * 0.8 - 0.4)).toFixed(1)) : 0;
+      
+      if (valveState === 'OPEN') {
+        setFlowRate(currentFlowNoise);
+        setTodayUsage(prev => Number((prev + (currentFlowNoise / 60) * 0.05).toFixed(2)));
+      } else {
+        setFlowRate(0.0);
+      }
+
+      setRealtimeHistory(prev => [
+        ...prev.slice(1),
+        {
+          time: timeStr,
+          flow: valveState === 'OPEN' ? currentFlowNoise : 0,
+          leakRisk: scenario === 'BURST_PIPE' ? 95 : scenario === 'MICRO_LEAK' ? 60 : 5
+        }
+      ]);
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [scenario, valveState]);
+
   // WebSocket listener for real ESP32 telemetry from server/index.js
   useEffect(() => {
     let ws;
@@ -103,19 +182,18 @@ export const WaterProvider = ({ children }) => {
 
             setLastHeartbeat(new Date());
 
-            // Extract sensor readings
+            // Extract sensor readings with comprehensive fallback
             const levelPercent = data.water_level_percent ?? data.percentage ?? 0;
             const volumeLiters = data.water_volume_liters ?? (data.water_volume_ml ? data.water_volume_ml / 1000 : 0);
             const dist = data.distance_cm ?? data.distance ?? 0;
-
-            const currentFlow = levelPercent > 0 ? Number(levelPercent.toFixed(1)) : 0;
-            setFlowRate(currentFlow);
-
-            const currentPressure = dist > 0 ? Number(dist.toFixed(1)) : 55.0;
-            setPressure(currentPressure);
+            
+            // Extract raw flow rate directly from hardware telemetry if available
+            const rawFlow = data.flow_rate ?? data.flowRate ?? data.flow ?? (levelPercent > 0 ? Number((levelPercent * 0.3).toFixed(1)) : 0);
+            
+            setFlowRate(Number(rawFlow.toFixed(1)));
 
             if (volumeLiters > 0) {
-              setTodayUsage(prev => Number((prev + volumeLiters * 0.05).toFixed(2)));
+              setTodayUsage(prev => Number((prev + volumeLiters * 0.01).toFixed(2)));
             }
 
             setRealtimeHistory(prev => {
@@ -124,33 +202,32 @@ export const WaterProvider = ({ children }) => {
                 ...prev.slice(1),
                 {
                   time: nextTime,
-                  flow: currentFlow,
-                  pressure: currentPressure,
+                  flow: Number(rawFlow.toFixed(1)),
                   leakRisk: data.status === 'CRITICAL' ? 95 : data.status === 'HIGH' ? 60 : 5
                 }
               ];
               return updated;
             });
 
-            if (data.status === 'CRITICAL' || data.buzzer) {
+            if (data.status === 'CRITICAL' || data.buzzer || levelPercent >= 85) {
               setDetectedAnomaly({
                 severity: 'CRITICAL',
-                zone: 'Water Storage Tank (ESP32 Node)',
-                type: 'Critical Level Overfill / Spill Alert',
-                estimatedLoss: `${levelPercent}% Full`,
+                zone: 'Water Storage Tank (Ultrasonic Node)',
+                type: 'Critical Level Overfill / Overflow Alert',
+                estimatedLoss: `${levelPercent.toFixed(1)}% Full (Dist: ${dist.toFixed(1)}cm)`,
                 confidence: 99.8,
-                advice: 'Tank capacity critical. Water shutoff advised.'
+                advice: 'Tank capacity critical. Water shutoff or usage advised.'
               });
-            } else if (data.status === 'HIGH') {
+            } else if (data.status === 'HIGH' || levelPercent >= 70) {
               setDetectedAnomaly({
                 severity: 'WARNING',
-                zone: 'Water Storage Tank (ESP32 Node)',
+                zone: 'Water Storage Tank (Ultrasonic Node)',
                 type: 'High Water Level Warning',
-                estimatedLoss: `${levelPercent}% Full`,
+                estimatedLoss: `${levelPercent.toFixed(1)}% Full`,
                 confidence: 90.0,
                 advice: 'Approaching full capacity threshold.'
               });
-            } else {
+            } else if (scenario === 'NORMAL') {
               setDetectedAnomaly(null);
             }
           } catch (err) {
