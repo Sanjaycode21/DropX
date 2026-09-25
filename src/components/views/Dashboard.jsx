@@ -4,22 +4,18 @@ import { useWater } from '../../context/WaterContext';
 import { 
   Droplet, 
   Activity, 
-  Gauge, 
   IndianRupee, 
-  Award, 
   AlertTriangle, 
   CheckCircle2, 
   Power, 
-  ArrowUpRight, 
-  ArrowDownRight,
   TrendingUp,
   Sparkles,
   Sliders,
   ShieldCheck,
   Building,
-  RefreshCw,
   Clock,
-  Layers
+  Layers,
+  Radio
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -30,31 +26,24 @@ import {
   ResponsiveContainer, 
   BarChart, 
   Bar, 
-  CartesianGrid,
-  Legend,
-  Cell
+  CartesianGrid
 } from 'recharts';
 
 export const Dashboard = ({ setActiveTab }) => {
   const { currentUser, isAdmin } = useAuth();
   const { 
     flowRate, 
-    pressure, 
-    tdsQuality, 
     todayUsage, 
     valveState, 
     toggleValve, 
     emergencyShutoff,
     realtimeHistory, 
     hourlyData, 
-    weeklyData, 
     fixturesData,
     dailyBudget, 
     setDailyBudget,
     detectedAnomaly,
-    todayCost,
-    projectedMonthlyCost,
-    scenario
+    projectedMonthlyCost
   } = useWater();
 
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
@@ -75,17 +64,18 @@ export const Dashboard = ({ setActiveTab }) => {
       {/* Top Welcome & Subtitle */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-black tracking-tight text-white">
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-2xl font-black tracking-tight text-slate-900">
               {isAdmin ? 'Grid Supervisory Telemetry' : 'Water Intelligence Overview'}
             </h2>
-            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-cyan-950 text-cyan-400 border border-cyan-800">
-              Live Sensor Feed
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200/80 flex items-center gap-1.5 shadow-2xs">
+              <Radio className="w-3 h-3 text-cyan-600 animate-pulse" />
+              Ultrasonic Sensor Feed
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Monitoring <strong className="text-slate-200">{currentUser?.property}</strong> • Meter Node:{' '}
-            <span className="font-mono text-cyan-400">{currentUser?.meterId}</span>
+          <p className="text-xs text-slate-500 mt-1">
+            Monitoring <strong className="text-slate-800 font-semibold">{currentUser?.property}</strong> • Meter Node:{' '}
+            <span className="font-mono text-cyan-700 font-semibold">{currentUser?.meterId}</span>
           </p>
         </div>
 
@@ -93,26 +83,26 @@ export const Dashboard = ({ setActiveTab }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('leaks')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-xs text-slate-300 transition"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200/90 hover:border-cyan-300 hover:bg-cyan-50/50 text-xs font-semibold text-slate-700 transition shadow-2xs"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-600" />
             <span>AI Leak Diagnostics</span>
           </button>
           <button
             onClick={() => setBudgetModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-xs text-slate-300 transition"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-slate-200/90 hover:border-cyan-300 hover:bg-cyan-50/50 text-xs font-semibold text-slate-700 transition shadow-2xs"
           >
-            <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+            <Sliders className="w-3.5 h-3.5 text-cyan-600" />
             <span>Target Budget: {dailyBudget}L</span>
           </button>
         </div>
       </div>
 
-      {/* Critical Alert Banner if Anomaly Detected or Valve Closed */}
+      {/* Critical Alert Banner if Anomaly Detected */}
       {detectedAnomaly && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/80 to-slate-900 border border-rose-500/50 shadow-xl shadow-rose-950/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-pulse-subtle">
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-white border border-rose-200 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 shrink-0">
+            <div className="p-2.5 rounded-xl bg-rose-500 text-white shadow-sm shrink-0">
               <AlertTriangle className="w-6 h-6 animate-bounce" />
             </div>
             <div>
@@ -120,28 +110,28 @@ export const Dashboard = ({ setActiveTab }) => {
                 <span className="text-xs font-bold px-2 py-0.5 rounded bg-rose-600 text-white uppercase tracking-wider">
                   {detectedAnomaly.severity} LEAK DETECTED
                 </span>
-                <span className="text-xs text-rose-200 font-medium font-mono">
+                <span className="text-xs text-rose-700 font-semibold font-mono">
                   {detectedAnomaly.confidence}% AI Confidence
                 </span>
               </div>
-              <h4 className="text-sm font-bold text-white mt-1">
+              <h4 className="text-sm font-bold text-slate-900 mt-1">
                 {detectedAnomaly.type} in {detectedAnomaly.zone}
               </h4>
-              <p className="text-xs text-rose-200/90 mt-0.5">
-                {detectedAnomaly.advice} (Estimated loss: <strong>{detectedAnomaly.estimatedLoss}</strong>)
+              <p className="text-xs text-slate-600 mt-0.5">
+                {detectedAnomaly.advice} (Estimated loss: <strong className="text-rose-700 font-bold">{detectedAnomaly.estimatedLoss}</strong>)
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
             <button
               onClick={() => setActiveTab('leaks')}
-              className="flex-1 md:flex-none px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 border border-rose-500/40 text-rose-300 hover:bg-slate-800 transition text-center"
+              className="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 transition text-center shadow-xs"
             >
               Analyze Leak
             </button>
             <button
               onClick={emergencyShutoff}
-              className="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-1.5"
+              className="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20 transition flex items-center justify-center gap-1.5"
             >
               <Power className="w-3.5 h-3.5" />
               Emergency Shutoff
@@ -150,81 +140,63 @@ export const Dashboard = ({ setActiveTab }) => {
         </div>
       )}
 
-      {/* Valve Closed Banner if valve is shut manually */}
-      {valveState !== 'OPEN' && !detectedAnomaly && (
-        <div className="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/40 text-amber-200 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>
-              <strong>Main Solenoid Valve is Currently {valveState}.</strong> Household water delivery is physically halted.
-            </span>
-          </div>
-          <button
-            onClick={toggleValve}
-            className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition"
-          >
-            Reopen Valve
-          </button>
-        </div>
-      )}
-
-      {/* SUMMARY KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* SUMMARY KPI CARDS: 3 EVENLY BALANCED COLUMNS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         
         {/* Card 1: Today's Water Usage */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden">
+        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Today's Consumption</span>
-            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-              <Droplet className="w-4 h-4" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Today's Consumption</span>
+            <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
+              <Droplet className="w-4 h-4 fill-cyan-500/20" />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight text-white font-mono">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
                 {todayUsage.toFixed(1)}
               </span>
-              <span className="text-sm font-semibold text-cyan-400">Liters</span>
+              <span className="text-sm font-bold text-cyan-600">Liters</span>
             </div>
-            <div className="mt-2 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">Target Budget: {dailyBudget} L</span>
-              <span className={`font-semibold ${isBudgetExceeded ? 'text-rose-400' : 'text-emerald-400'}`}>
+            <div className="mt-2.5 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Target Budget: {dailyBudget} L</span>
+              <span className={`font-bold ${isBudgetExceeded ? 'text-rose-600' : 'text-emerald-600'}`}>
                 {budgetPercent}% used
               </span>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+            <div className="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden border border-slate-200/60">
               <div 
-                className={`h-full transition-all duration-500 ${isBudgetExceeded ? 'bg-rose-500' : 'bg-cyan-400'}`}
+                className={`h-full transition-all duration-500 rounded-full ${isBudgetExceeded ? 'bg-rose-500' : 'bg-gradient-to-r from-cyan-500 to-blue-600'}`}
                 style={{ width: `${Math.min(100, budgetPercent)}%` }}
               />
             </div>
           </div>
         </div>
 
-        {/* Card 2: Live Flow Rate */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden">
+        {/* Card 2: Real-Time Flow Rate */}
+        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Real-Time Flow Rate</span>
-            <div className={`p-2 rounded-xl border ${
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Real-Time Flow Rate</span>
+            <div className={`p-2.5 rounded-xl border shadow-2xs ${
               flowRate > 30 
-                ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 animate-pulse' 
-                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' 
+                : 'bg-emerald-50 text-emerald-600 border-emerald-200'
             }`}>
               <Activity className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight text-white font-mono">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
                 {flowRate.toFixed(1)}
               </span>
-              <span className="text-sm font-semibold text-cyan-400">L/min</span>
+              <span className="text-sm font-bold text-cyan-600">L/min</span>
             </div>
-            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400">
-              <span className={`w-2 h-2 rounded-full ${flowRate > 0 ? 'bg-cyan-400 animate-ping' : 'bg-slate-600'}`} />
-              <span>
+            <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-slate-500">
+              <span className={`w-2 h-2 rounded-full ${flowRate > 0 ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
+              <span className="font-medium">
                 {flowRate === 0 
-                  ? 'Zero Flow (Idle / Shutoff)' 
+                  ? 'Zero Flow (Idle / Idle Tank)' 
                   : flowRate > 30 
                   ? 'Abnormally High Surge' 
                   : 'Active Flow Steady'}
@@ -233,48 +205,24 @@ export const Dashboard = ({ setActiveTab }) => {
           </div>
         </div>
 
-        {/* Card 3: Line Pressure & Water Quality */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden">
+        {/* Card 3: Estimated Bill & Eco Grade */}
+        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Line Pressure & Quality</span>
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <Gauge className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight text-white font-mono">
-                {pressure.toFixed(1)}
-              </span>
-              <span className="text-sm font-semibold text-blue-400">PSI</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">TDS Purity:</span>
-              <span className="text-emerald-400 font-semibold font-mono">
-                {tdsQuality} ppm (Pure)
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Estimated Bill & Eco Grade */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Projected Month Bill</span>
-            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Projected Month Bill</span>
+            <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 border border-teal-200/60 shadow-2xs">
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black tracking-tight text-white font-mono">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
                 ₹{projectedMonthlyCost.totalCost.toFixed(2)}
               </span>
-              <span className="text-xs text-slate-400">/mo</span>
+              <span className="text-xs text-slate-500 font-medium">/mo</span>
             </div>
-            <div className="mt-2 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">Eco Conservation Grade:</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold border border-emerald-800">
+            <div className="mt-2.5 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Eco Conservation Grade:</span>
+              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 shadow-2xs">
                 Grade A-
               </span>
             </div>
@@ -283,86 +231,66 @@ export const Dashboard = ({ setActiveTab }) => {
 
       </div>
 
-      {/* REAL-TIME ROLLING TELEMETRY CHART */}
-      <div className="glass-panel rounded-2xl p-5 border border-slate-800">
+      {/* REAL-TIME ROLLING TELEMETRY CHART: EXCLUSIVELY FLOW RATE (L/min) */}
+      <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cyan-400" />
-                Live Telemetry Stream (ESP32 High Frequency)
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-cyan-600" />
+                Live Telemetry Stream (HC-SR04 Ultrasonic Integration)
               </h3>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse">
-                • LIVE 2.5s
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-600 animate-ping" />
+                LIVE 1s
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Continuous YF-S201 pulse sensor streaming flow velocity and piezoresistive water line pressure.
+            <p className="text-xs text-slate-500 mt-0.5">
+              High-frequency ultrasonic distance sensor telemetry continuously computing real-time water volume & flow velocity.
             </p>
           </div>
 
-          {/* Legend indicator */}
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5 text-cyan-400">
-              <span className="w-3 h-0.5 bg-cyan-400 rounded-full" />
-              <span>Flow (L/min)</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-blue-400">
-              <span className="w-3 h-0.5 bg-blue-400 rounded-full" />
-              <span>Pressure (PSI)</span>
+          {/* Single Legend indicator */}
+          <div className="flex items-center gap-3 text-xs">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-800 font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
+              <span>Flow Velocity (L/min)</span>
             </div>
           </div>
         </div>
 
-        {/* Chart */}
+        {/* Single Axis Area Chart for Flow (L/min) */}
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={realtimeHistory}>
               <defs>
-                <linearGradient id="flowGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
-                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0}/>
-                </linearGradient>
-                <linearGradient id="pressGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0}/>
+                <linearGradient id="flowGradLight" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.45}/>
+                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.02}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis dataKey="time" stroke="#64748b" tick={{ fontSize: 10 }} />
-              <YAxis yAxisId="left" stroke="#06b6d4" tick={{ fontSize: 10 }} domain={[0, 'auto']} />
-              <YAxis yAxisId="right" orientation="right" stroke="#3b82f6" tick={{ fontSize: 10 }} domain={[0, 80]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="time" stroke="#64748b" tick={{ fontSize: 11 }} />
+              <YAxis stroke="#0891b2" tick={{ fontSize: 11 }} domain={[0, 'auto']} label={{ value: 'L/min', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#0891b2', fontSize: '11px', fontWeight: 'bold' } }} />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#0f172a', 
+                  backgroundColor: '#ffffff', 
                   borderColor: '#06b6d4', 
                   borderRadius: '0.75rem',
                   fontSize: '12px',
-                  color: '#fff'
+                  color: '#0f172a',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                 }} 
               />
               <Area 
-                yAxisId="left"
                 type="monotone" 
                 dataKey="flow" 
                 stroke="#06b6d4" 
                 strokeWidth={2.5}
                 fillOpacity={1} 
-                fill="url(#flowGrad)" 
+                fill="url(#flowGradLight)" 
                 isAnimationActive={false}
-                name="Flow (L/min)"
-              />
-              <Area 
-                yAxisId="right"
-                type="monotone" 
-                dataKey="pressure" 
-                stroke="#3b82f6" 
-                strokeWidth={1.5}
-                strokeDasharray="4 2"
-                fillOpacity={1} 
-                fill="url(#pressGrad)" 
-                isAnimationActive={false}
-                name="Pressure (PSI)"
+                name="Flow Rate (L/min)"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -373,20 +301,20 @@ export const Dashboard = ({ setActiveTab }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Diurnal Hourly Profile (2 Cols) */}
-        <div className="lg:col-span-2 glass-panel rounded-2xl p-5 border border-slate-800">
+        <div className="lg:col-span-2 glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-cyan-400" />
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-cyan-600" />
                 Diurnal Consumption vs Baseline (24-Hour Cycle)
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Highlighting morning peak (07:00-09:00) and evening peak (19:00-21:00).
               </p>
             </div>
             <button 
               onClick={() => setActiveTab('usage')}
-              className="text-xs text-cyan-400 hover:text-cyan-300 font-medium"
+              className="text-xs text-cyan-600 hover:text-cyan-700 font-bold"
             >
               Full Details &rarr;
             </button>
@@ -395,52 +323,53 @@ export const Dashboard = ({ setActiveTab }) => {
           <div className="h-60 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={hourlyData} barGap={1}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="hour" stroke="#64748b" tick={{ fontSize: 9 }} interval={2} />
-                <YAxis stroke="#64748b" tick={{ fontSize: 10 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="hour" stroke="#64748b" tick={{ fontSize: 10 }} interval={2} />
+                <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#0f172a', 
+                    backgroundColor: '#ffffff', 
                     borderColor: '#38bdf8', 
                     borderRadius: '0.75rem',
-                    fontSize: '12px' 
+                    fontSize: '12px',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
                   }} 
                 />
-                <Bar dataKey="liters" name="Actual (L)" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="baseline" name="Expected Baseline (L)" fill="#1e293b" stroke="#334155" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="usage" name="Actual (L)" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="baseline" name="Expected Baseline (L)" fill="#e2e8f0" stroke="#cbd5e1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Fixture Consumption Distribution (1 Col) */}
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800 flex flex-col justify-between">
+        <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Layers className="w-4 h-4 text-cyan-400" />
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-cyan-600" />
                 Fixture Breakdown
               </h3>
-              <span className="text-xs text-cyan-400 font-mono">Today</span>
+              <span className="text-xs text-cyan-700 font-mono font-semibold">Today</span>
             </div>
-            <p className="text-xs text-slate-400 mb-4">
-              AI signature disaggregation of household water consumption.
+            <p className="text-xs text-slate-500 mb-4">
+              Mathematical disaggregation of household water consumption.
             </p>
 
             <div className="space-y-3">
               {fixturesData.map((fixture) => (
                 <div key={fixture.name} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-slate-300">{fixture.name}</span>
-                    <span className="font-mono text-slate-400">
-                      {fixture.liters} L <strong className="text-white">({fixture.percentage}%)</strong>
+                    <span className="font-semibold text-slate-700">{fixture.name}</span>
+                    <span className="font-mono text-slate-500">
+                      {fixture.liters} L <strong className="text-slate-900 font-bold">({fixture.value}%)</strong>
                     </span>
                   </div>
-                  <div className="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/60">
                     <div 
                       className="h-full rounded-full transition-all duration-300"
                       style={{ 
-                        width: `${fixture.percentage}%`,
+                        width: `${fixture.value}%`,
                         backgroundColor: fixture.color
                       }}
                     />
@@ -450,12 +379,12 @@ export const Dashboard = ({ setActiveTab }) => {
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-800">
+          <div className="mt-4 pt-4 border-t border-slate-100">
             <button
               onClick={() => setActiveTab('recommendations')}
-              className="w-full py-2 rounded-xl text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl text-xs font-bold bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 transition flex items-center justify-center gap-1.5 shadow-2xs"
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
               View Conservation Recommendations
             </button>
           </div>
@@ -464,70 +393,45 @@ export const Dashboard = ({ setActiveTab }) => {
       </div>
 
       {/* QUICK HARDWARE & ACTION TILES */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         
-        {/* Tile 1: Motorized Solenoid Remote Override */}
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        {/* Tile 1: ML Demand Predictor */}
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl border ${
-              valveState === 'OPEN'
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                : 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-            }`}>
-              <Power className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-white">Main Solenoid Valve</p>
-              <p className="text-[11px] text-slate-400">
-                Current State: <span className="font-bold text-cyan-400 uppercase">{valveState}</span>
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={toggleValve}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-          >
-            {valveState === 'OPEN' ? 'Close Line' : 'Open Line'}
-          </button>
-        </div>
-
-        {/* Tile 2: ML Demand Predictor */}
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+            <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-bold text-white">Forecast Tomorrow</p>
-              <p className="text-[11px] text-slate-400">
-                Expected: <strong className="text-white">492 L</strong> (Weather: 29°C Sunny)
+              <p className="text-xs font-bold text-slate-900">Forecast Tomorrow</p>
+              <p className="text-[11px] text-slate-500">
+                Expected: <strong className="text-slate-800 font-bold">492 L</strong> (Weather: 29°C Sunny)
               </p>
             </div>
           </div>
           <button
             onClick={() => setActiveTab('prediction')}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 transition"
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 transition"
           >
             Forecast
           </button>
         </div>
 
-        {/* Tile 3: ESP32 Hardware Integration */}
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+        {/* Tile 2: ESP32 Hardware Integration */}
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/30">
+            <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-200/60">
               <Building className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-bold text-white">Hardware Telemetry Node</p>
-              <p className="text-[11px] text-slate-400">
-                ESP32 + YF-S201 (MQTT Ready)
+              <p className="text-xs font-bold text-slate-900">Hardware Telemetry Node</p>
+              <p className="text-[11px] text-slate-500">
+                ESP32 + HC-SR04 Ultrasonic (Serial/WS Ingestion)
               </p>
             </div>
           </div>
           <button
             onClick={() => setActiveTab('settings')}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 transition"
           >
             Configure
           </button>
@@ -537,15 +441,15 @@ export const Dashboard = ({ setActiveTab }) => {
 
       {/* Target Budget Modal */}
       {budgetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="w-full max-w-sm rounded-2xl bg-slate-900 border border-cyan-500/30 p-6 text-slate-200 shadow-2xl">
-            <h3 className="text-base font-bold text-white mb-2">Set Daily Water Budget</h3>
-            <p className="text-xs text-slate-400 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md">
+          <div className="w-full max-w-sm rounded-2xl bg-white border border-slate-200 p-6 text-slate-800 shadow-2xl">
+            <h3 className="text-base font-bold text-slate-900 mb-1">Set Daily Water Budget</h3>
+            <p className="text-xs text-slate-500 mb-4">
               Customize your household conservation threshold. DROP X will alert you when consumption reaches 80% and 100%.
             </p>
             <form onSubmit={handleSaveBudget} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Daily Target (Liters)
                 </label>
                 <input
@@ -555,20 +459,20 @@ export const Dashboard = ({ setActiveTab }) => {
                   step="25"
                   value={tempBudget}
                   onChange={(e) => setTempBudget(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:outline-none focus:border-cyan-500"
                 />
               </div>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setBudgetModalOpen(false)}
-                  className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300"
+                  className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-bold text-slate-950"
+                  className="flex-1 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-xs font-bold text-white shadow-md shadow-cyan-600/20"
                 >
                   Save Budget
                 </button>

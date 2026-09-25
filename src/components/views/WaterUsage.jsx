@@ -2,17 +2,11 @@ import React, { useState } from 'react';
 import { useWater } from '../../context/WaterContext';
 import { 
   Droplet, 
-  Calendar, 
-  Clock, 
   TrendingDown, 
-  TrendingUp, 
   Layers, 
-  Zap, 
-  Filter,
-  Users,
   CheckCircle,
-  HelpCircle,
-  BarChart2
+  BarChart2,
+  Clock
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -22,7 +16,6 @@ import {
   Tooltip, 
   ResponsiveContainer, 
   CartesianGrid, 
-  Legend, 
   AreaChart, 
   Area,
   PieChart,
@@ -31,8 +24,8 @@ import {
 } from 'recharts';
 
 export const WaterUsage = () => {
-  const { hourlyData, weeklyData, fixturesData, todayUsage, dailyBudget } = useWater();
-  const [timeframe, setTimeframe] = useState('hourly'); // 'hourly' | 'weekly' | 'monthly'
+  const { hourlyData, weeklyData, fixturesData } = useWater();
+  const [timeframe, setTimeframe] = useState('hourly');
 
   // Monthly 30-day simulation
   const monthlyData = [
@@ -62,43 +55,43 @@ export const WaterUsage = () => {
       {/* Header & Filter Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-            <Droplet className="w-6 h-6 text-cyan-400" />
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+            <Droplet className="w-6 h-6 text-cyan-600" />
             Water Consumption Analytics
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Comprehensive telemetry breakdown, diurnal patterns, and fixture-level disaggregation.
+          <p className="text-xs text-slate-500 mt-1">
+            Comprehensive ultrasonic telemetry breakdown, diurnal patterns, and fixture-level disaggregation.
           </p>
         </div>
 
         {/* Timeframe pill selector */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 self-start sm:self-auto">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white border border-slate-200/90 shadow-2xs self-start sm:self-auto">
           <button
             onClick={() => setTimeframe('hourly')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
               timeframe === 'hourly'
-                ? 'bg-cyan-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
             24-Hour Diurnal
           </button>
           <button
             onClick={() => setTimeframe('weekly')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
               timeframe === 'weekly'
-                ? 'bg-cyan-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
             Past 7 Days
           </button>
           <button
             onClick={() => setTimeframe('monthly')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
               timeframe === 'monthly'
-                ? 'bg-cyan-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
             Month View
@@ -109,48 +102,48 @@ export const WaterUsage = () => {
       {/* TOP ANALYTIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <div className="glass-panel rounded-2xl p-4 border border-slate-800">
-          <span className="text-xs text-slate-400 font-medium">Per Capita Usage</span>
+        <div className="glass-panel rounded-2xl p-4 border border-slate-200/90 bg-white shadow-sm">
+          <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Per Capita Usage</span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-mono">103.1</span>
-            <span className="text-xs text-cyan-400">L / person / day</span>
+            <span className="text-2xl font-black text-slate-900 font-mono">103.1</span>
+            <span className="text-xs font-bold text-cyan-700">L / person / day</span>
           </div>
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
-            <CheckCircle className="w-3.5 h-3.5" />
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-700 font-bold">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>Well below 135 L municipal limit</span>
           </div>
         </div>
 
-        <div className="glass-panel rounded-2xl p-4 border border-slate-800">
-          <span className="text-xs text-slate-400 font-medium">Average Daily Baseline</span>
+        <div className="glass-panel rounded-2xl p-4 border border-slate-200/90 bg-white shadow-sm">
+          <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Average Daily Baseline</span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-mono">495.2</span>
-            <span className="text-xs text-cyan-400">Liters</span>
+            <span className="text-2xl font-black text-slate-900 font-mono">495.2</span>
+            <span className="text-xs font-bold text-cyan-700">Liters</span>
           </div>
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-400">
-            <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-emerald-400 font-medium">-4.2%</span> vs last week
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-600">
+            <TrendingDown className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="text-emerald-700 font-bold">-4.2%</span> vs last week
           </div>
         </div>
 
-        <div className="glass-panel rounded-2xl p-4 border border-slate-800">
-          <span className="text-xs text-slate-400 font-medium">Peak Demand Hour</span>
+        <div className="glass-panel rounded-2xl p-4 border border-slate-200/90 bg-white shadow-sm">
+          <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Peak Demand Hour</span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-cyan-400 font-mono">08:00 AM</span>
+            <span className="text-2xl font-black text-cyan-700 font-mono">08:00 AM</span>
           </div>
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-400">
-            <span>Flow surged to <strong>78.2 L/hr</strong></span>
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-slate-500">
+            <span>Flow surged to <strong className="text-slate-900">78.2 L/hr</strong></span>
           </div>
         </div>
 
-        <div className="glass-panel rounded-2xl p-4 border border-slate-800">
-          <span className="text-xs text-slate-400 font-medium">Base Minimum Flow (Night)</span>
+        <div className="glass-panel rounded-2xl p-4 border border-slate-200/90 bg-white shadow-sm">
+          <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Base Minimum Flow (Night)</span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-white font-mono">0.02</span>
-            <span className="text-xs text-cyan-400">L/min</span>
+            <span className="text-2xl font-black text-slate-900 font-mono">0.02</span>
+            <span className="text-xs font-bold text-cyan-700">L/min</span>
           </div>
-          <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
-            <CheckCircle className="w-3.5 h-3.5" />
+          <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-700 font-bold">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>Night drop verified (No hidden leak)</span>
           </div>
         </div>
@@ -158,27 +151,27 @@ export const WaterUsage = () => {
       </div>
 
       {/* PRIMARY USAGE CHART */}
-      <div className="glass-panel rounded-2xl p-6 border border-slate-800">
+      <div className="glass-panel rounded-2xl p-6 border border-slate-200/90 bg-white shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-cyan-400" />
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-cyan-600" />
               {timeframe === 'hourly' && '24-Hour Diurnal Consumption Cycle'}
               {timeframe === 'weekly' && 'Daily Water Use vs Target Budget (Past 7 Days)'}
               {timeframe === 'monthly' && '30-Day Household Water Trajectory'}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Comparison between recorded IoT flow telemetry and algorithmic target baselines.
+            <p className="text-xs text-slate-500 mt-0.5">
+              Comparison between recorded ultrasonic flow telemetry and algorithmic target baselines.
             </p>
           </div>
 
           <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5 text-cyan-400">
-              <span className="w-3 h-3 bg-cyan-500 rounded-sm" />
+            <div className="flex items-center gap-1.5 text-cyan-700 font-bold">
+              <span className="w-3 h-3 bg-cyan-600 rounded-sm" />
               <span>Actual Consumption</span>
             </div>
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-3 h-0.5 bg-slate-400 border border-slate-400 rounded-full" />
+            <div className="flex items-center gap-1.5 text-slate-500">
+              <span className="w-3 h-2 bg-slate-200 rounded-sm" />
               <span>Target Baseline</span>
             </div>
           </div>
@@ -188,41 +181,41 @@ export const WaterUsage = () => {
           <ResponsiveContainer width="100%" height="100%">
             {timeframe === 'hourly' ? (
               <BarChart data={hourlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="hour" stroke="#64748b" tick={{ fontSize: 10 }} />
-                <YAxis stroke="#64748b" tick={{ fontSize: 10 }} unit=" L" />
+                <YAxis stroke="#64748b" tick={{ fontSize: 11 }} unit=" L" />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px' }} 
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px' }} 
                 />
-                <Bar dataKey="liters" name="Actual (L)" fill="#06b6d4" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="baseline" name="Expected Baseline (L)" fill="#334155" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="usage" name="Actual (L)" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="baseline" name="Expected Baseline (L)" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
               </BarChart>
             ) : timeframe === 'weekly' ? (
               <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="day" stroke="#64748b" tick={{ fontSize: 11 }} />
-                <YAxis stroke="#64748b" tick={{ fontSize: 10 }} unit=" L" />
+                <YAxis stroke="#64748b" tick={{ fontSize: 11 }} unit=" L" />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px' }} 
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px' }} 
                 />
-                <Bar dataKey="actual" name="Consumed (L)" fill="#06b6d4" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="budget" name="Daily Budget (L)" fill="#334155" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="consumption" name="Consumed (L)" fill="#06b6d4" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="target" name="Daily Budget (L)" fill="#e2e8f0" radius={[6, 6, 0, 0]} />
               </BarChart>
             ) : (
               <AreaChart data={monthlyData}>
                 <defs>
-                  <linearGradient id="monthGrad" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="monthGradLight" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
                     <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="day" stroke="#64748b" tick={{ fontSize: 11 }} />
-                <YAxis stroke="#64748b" tick={{ fontSize: 10 }} unit=" L" />
+                <YAxis stroke="#64748b" tick={{ fontSize: 11 }} unit=" L" />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px' }} 
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px' }} 
                 />
-                <Area type="monotone" dataKey="liters" stroke="#06b6d4" strokeWidth={3} fill="url(#monthGrad)" name="Liters" />
+                <Area type="monotone" dataKey="liters" stroke="#06b6d4" strokeWidth={3} fill="url(#monthGradLight)" name="Liters" />
               </AreaChart>
             )}
           </ResponsiveContainer>
@@ -233,13 +226,13 @@ export const WaterUsage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Fixture Breakdown Donut */}
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800">
-          <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
-            <Layers className="w-4 h-4 text-cyan-400" />
+        <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-1">
+            <Layers className="w-4 h-4 text-cyan-600" />
             End-Use Disaggregation
           </h3>
-          <p className="text-xs text-slate-400 mb-4">
-            AI frequency spectral analysis isolates specific water appliances.
+          <p className="text-xs text-slate-500 mb-4">
+            Ultrasonic volume-derivative spectral analysis isolates specific water appliances.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -260,7 +253,7 @@ export const WaterUsage = () => {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#06b6d4', borderRadius: '0.5rem', fontSize: '11px' }} 
+                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#06b6d4', borderRadius: '0.5rem', fontSize: '11px' }} 
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -271,10 +264,10 @@ export const WaterUsage = () => {
                 <div key={f.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: COLORS[i] }} />
-                    <span className="text-slate-300 font-medium">{f.name}</span>
+                    <span className="text-slate-700 font-semibold">{f.name}</span>
                   </div>
-                  <span className="font-mono text-slate-400">
-                    {f.liters} L <strong className="text-white">({f.percentage}%)</strong>
+                  <span className="font-mono text-slate-500">
+                    {f.liters} L <strong className="text-slate-900 font-bold">({f.value}%)</strong>
                   </span>
                 </div>
               ))}
@@ -283,31 +276,31 @@ export const WaterUsage = () => {
         </div>
 
         {/* Recent High-Volume Events Log */}
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800">
-          <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-cyan-400" />
+        <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-1">
+            <Clock className="w-4 h-4 text-cyan-600" />
             Recent Water Draw Events
           </h3>
-          <p className="text-xs text-slate-400 mb-3">
-            Discrete flow events registered by the ESP32 pulse counter today.
+          <p className="text-xs text-slate-500 mb-3">
+            Discrete flow events registered by the ESP32 ultrasonic sensor today.
           </p>
 
-          <div className="divide-y divide-slate-800/80 max-h-60 overflow-y-auto">
+          <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
             {recentEvents.map((evt) => (
               <div key={evt.id} className="py-2.5 flex items-center justify-between text-xs">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-200">{evt.fixture}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
+                    <span className="font-bold text-slate-900">{evt.fixture}</span>
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-50 text-cyan-700 border border-cyan-200 font-bold">
                       {evt.status}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-[11px] text-slate-400 mt-0.5">
                     {evt.time} • Duration: {evt.duration}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="font-mono font-bold text-cyan-400 text-sm">{evt.volume}</span>
+                  <span className="font-mono font-bold text-cyan-700 text-sm">{evt.volume}</span>
                 </div>
               </div>
             ))}

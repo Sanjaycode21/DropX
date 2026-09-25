@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export const ScenarioBar = () => {
-  const { scenario, switchScenario, valveState, flowRate, pressure } = useWater();
+  const { scenario, switchScenario } = useWater();
 
   const scenarios = [
     {
@@ -20,59 +20,59 @@ export const ScenarioBar = () => {
       label: 'Normal Flow',
       icon: ShieldCheck,
       desc: 'Typical daily baseline (2.8 L/min)',
-      badgeColor: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20'
+      badgeColor: 'text-emerald-700 border-emerald-300 bg-emerald-50'
     },
     {
       id: 'SHOWER',
       label: 'Morning Shower',
       icon: ShowerHead,
       desc: 'Active usage (11.5 L/min)',
-      badgeColor: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/20'
+      badgeColor: 'text-cyan-700 border-cyan-300 bg-cyan-50'
     },
     {
       id: 'MICRO_LEAK',
       label: 'Silent Micro-Leak',
       icon: Droplets,
       desc: 'Toilet flapper trickle (1.8 L/min)',
-      badgeColor: 'text-amber-400 border-amber-500/30 bg-amber-950/20'
+      badgeColor: 'text-amber-700 border-amber-300 bg-amber-50'
     },
     {
       id: 'BURST_PIPE',
       label: 'Pipe Burst Alert',
       icon: AlertTriangle,
       desc: 'Catastrophic rupture (45 L/min)',
-      badgeColor: 'text-rose-400 border-rose-500/30 bg-rose-950/20 animate-pulse'
+      badgeColor: 'text-rose-700 border-rose-300 bg-rose-50 animate-pulse'
     },
     {
       id: 'IRRIGATION',
       label: 'Lawn Sprinkler',
       icon: Sprout,
       desc: 'High output exterior line (22 L/min)',
-      badgeColor: 'text-sky-400 border-sky-500/30 bg-sky-950/20'
+      badgeColor: 'text-sky-700 border-sky-300 bg-sky-50'
     },
     {
       id: 'ECO',
       label: 'Eco Saver Mode',
       icon: Activity,
       desc: 'Low-flow aerated fixtures (1.2 L/min)',
-      badgeColor: 'text-teal-400 border-teal-500/30 bg-teal-950/20'
+      badgeColor: 'text-teal-700 border-teal-300 bg-teal-50'
     },
   ];
 
   return (
-    <div className="bg-slate-900/70 border-b border-slate-800/80 px-4 lg:px-6 py-2">
+    <div className="bg-white/80 border-b border-slate-200/80 px-4 lg:px-6 py-2 shadow-xs">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
         
         {/* Hackathon Simulation Controller Label */}
         <div className="flex items-center gap-2 shrink-0">
           <span className="flex h-2 w-2 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-600"></span>
           </span>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 font-mono">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-700 font-mono">
             Demo Simulator Engine:
           </span>
-          <span className="text-[11px] text-slate-400 hidden xl:inline">
+          <span className="text-[11px] text-slate-500 hidden xl:inline">
             (Select a scenario to test live telemetry & AI leak defense)
           </span>
         </div>
@@ -87,15 +87,15 @@ export const ScenarioBar = () => {
                 key={s.id}
                 onClick={() => switchScenario(s.id)}
                 title={s.desc}
-                className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition shrink-0 ${
+                className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition shrink-0 ${
                   isActive
-                    ? `${s.badgeColor} ring-1 ring-cyan-400/50 shadow-sm font-semibold`
-                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    ? `${s.badgeColor} ring-1 ring-cyan-500/40 shadow-xs font-bold`
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-100'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'scale-110 text-cyan-300' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'scale-110 text-cyan-600' : 'text-slate-500 group-hover:text-slate-800'}`} />
                 <span>{s.label}</span>
-                {isActive && <Check className="w-3 h-3 text-cyan-400" />}
+                {isActive && <Check className="w-3 h-3 text-cyan-700" />}
               </button>
             );
           })}

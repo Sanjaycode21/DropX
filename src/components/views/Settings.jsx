@@ -4,23 +4,18 @@ import { useWater } from '../../context/WaterContext';
 import { 
   Settings as SettingsIcon, 
   Cpu, 
-  Wifi, 
   Copy, 
   Check, 
   Sliders, 
-  User, 
   Home, 
-  BellRing, 
   Code2, 
   Terminal,
-  ShieldCheck,
-  CheckCircle2,
-  Power
+  CheckCircle2
 } from 'lucide-react';
 
 export const Settings = () => {
   const { currentUser } = useAuth();
-  const { dailyBudget, setDailyBudget } = useWater();
+  const { dailyBudget } = useWater();
 
   const [activeSection, setActiveSection] = useState('hardware'); // 'hardware' | 'thresholds' | 'profile'
   const [copiedCode, setCopiedCode] = useState(false);
@@ -29,7 +24,7 @@ export const Settings = () => {
   // Form states
   const [occupants, setOccupants] = useState(4);
   const [maxContinuousFlow, setMaxContinuousFlow] = useState(30);
-  const [pressureCutoff, setPressureCutoff] = useState(25);
+  const [tankHeightCm, setTankHeightCm] = useState(100);
   const [mqttBroker, setMqttBroker] = useState('mqtt://broker.hivemq.com:1883');
   const [mqttTopic, setMqttTopic] = useState('dropx/nodes/villa42/telemetry');
 
@@ -41,96 +36,64 @@ export const Settings = () => {
 
   const esp32ArduinoCode = `/*
  * ====================================================================
- * DROP X - Intelligent Water Flow & Automated Solenoid Controller
- * Firmware for ESP32 DevKit v1 + YF-S201 Hall Flow Sensor + 12V Relay
+ * DROP X - Intelligent Water Flow & Ultrasonic Distance Firmware
+ * Firmware for ESP32 DevKit v1 + HC-SR04 Ultrasonic Sensor + Buzzer
  * ====================================================================
  */
 
-#include <WiFi.h>
-#include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* mqtt_server = "broker.hivemq.com";
-const int mqtt_port = 1883;
-const char* telemetry_topic = "dropx/nodes/villa42/telemetry";
-const char* valve_control_topic = "dropx/nodes/villa42/valve";
+const int TRIG_PIN = 5;
+const int ECHO_PIN = 18;
+const int BUZZER_PIN = 19;
 
-// Hardware Pin Configuration
-const int SENSOR_PIN = 21;      // YF-S201 Yellow Signal Wire (Interrupt)
-const int RELAY_PIN = 4;        // 12V Motorized Solenoid Valve Relay
-const int PRESSURE_PIN = 34;    // Analog Piezoresistive Pressure Sensor (0-5V)
-
-volatile int pulseCount = 0;
-float flowRate = 0.0;           // Liters per minute
-float totalLiters = 0.0;
-unsigned long oldTime = 0;
-
-WiFiClient espClient;
-PubSubClient client(espClient);
-
-void IRAM_ATTR pulseCounter() {
-  pulseCount++;
-}
+const float TANK_FULL_DISTANCE_CM = 5.0;
+const float TANK_EMPTY_DISTANCE_CM = 30.0;
+unsigned long lastTime = 0;
 
 void setup() {
   Serial.begin(115200);
-  pinMode(SENSOR_PIN, INPUT_PULLUP);
-  pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, HIGH); // Valve default OPEN (Active Low Relay)
-
-  attachInterrupt(digitalPinToInterrupt(SENSOR_PIN), pulseCounter, FALLING);
-
-  // WiFi & MQTT Init
-  WiFi.begin(ssid, password);
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(valveCallback);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, LOW);
 }
 
 void loop() {
-  if (!client.connected()) {
-    reconnectMQTT();
+  if (Serial.available() > 0) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    if (command == "BUZZER_ON") {
+      digitalWrite(BUZZER_PIN, HIGH);
+    } else if (command == "BUZZER_OFF") {
+      digitalWrite(BUZZER_PIN, LOW);
+    }
   }
-  client.loop();
 
-  // Read sensor every 1 second
-  if ((millis() - oldTime) > 1000) {
-    detachInterrupt(SENSOR_PIN);
-    
-    // YF-S201 Calibration Factor: 7.5 pulses per second = 1 L/min
-    flowRate = ((1000.0 / (millis() - oldTime)) * pulseCount) / 7.5;
-    oldTime = millis();
-    totalLiters += (flowRate / 60.0);
-    pulseCount = 0;
-    
-    attachInterrupt(digitalPinToInterrupt(SENSOR_PIN), pulseCounter, FALLING);
+  if (millis() - lastTime >= 1000) {
+    lastTime = millis();
+    digitalWrite(TRIG_PIN, LOW);
+    delayMicroseconds(2);
+    digitalWrite(TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN, LOW);
 
-    // Read Pressure (Analog ADC 0-4095 to 0-100 PSI)
-    int rawAdc = analogRead(PRESSURE_PIN);
-    float pressurePsi = (rawAdc / 4095.0) * 100.0;
+    long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+    float distanceCm = (duration * 0.0343) / 2.0;
 
-    // Publish JSON Telemetry
+    if (distanceCm <= 0 || distanceCm > 400) distanceCm = TANK_EMPTY_DISTANCE_CM;
+
+    float fillPercentage = ((TANK_EMPTY_DISTANCE_CM - distanceCm) / (TANK_EMPTY_DISTANCE_CM - TANK_FULL_DISTANCE_CM)) * 100.0;
+    fillPercentage = constrain(fillPercentage, 0.0, 100.0);
+
     StaticJsonDocument<256> doc;
-    doc["nodeId"] = "ESP32-WTR-8842";
-    doc["flowRate"] = flowRate;
-    doc["pressure"] = pressurePsi;
-    doc["totalLiters"] = totalLiters;
-    doc["rssi"] = WiFi.RSSI();
+    doc["distance_cm"] = distanceCm;
+    doc["water_level_percent"] = fillPercentage;
+    doc["water_volume_liters"] = (fillPercentage * 0.5);
+    doc["status"] = (fillPercentage >= 85.0) ? "CRITICAL" : "NORMAL";
 
-    char buffer[256];
-    serializeJson(doc, buffer);
-    client.publish(telemetry_topic, buffer);
-  }
-}
-
-void valveCallback(char* topic, byte* payload, unsigned int length) {
-  String message;
-  for (int i = 0; i < length; i++) message += (char)payload[i];
-  if (message == "CLOSE") {
-    digitalWrite(RELAY_PIN, LOW); // Trigger Solenoid Cutoff
-  } else if (message == "OPEN") {
-    digitalWrite(RELAY_PIN, HIGH);
+    serializeJson(doc, Serial);
+    Serial.println();
   }
 }`;
 
@@ -145,28 +108,28 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
       
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-          <SettingsIcon className="w-6 h-6 text-cyan-400" />
+        <h2 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+          <SettingsIcon className="w-6 h-6 text-cyan-600" />
           Settings & ESP32 Hardware Integration
         </h2>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-500 mt-1">
           Configure household telemetry thresholds, MQTT gateways, and view ready-to-flash ESP32 C++ firmware.
         </p>
       </div>
 
       {saveSuccess && (
-        <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 shadow-2xs">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
           <span>Configuration saved successfully. Local parameters updated.</span>
         </div>
       )}
 
       {/* TABS */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 text-xs">
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-3 text-xs">
         <button
           onClick={() => setActiveSection('hardware')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition ${
-            activeSection === 'hardware' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition ${
+            activeSection === 'hardware' ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <Cpu className="w-4 h-4" />
@@ -174,8 +137,8 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
         </button>
         <button
           onClick={() => setActiveSection('thresholds')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition ${
-            activeSection === 'thresholds' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition ${
+            activeSection === 'thresholds' ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <Sliders className="w-4 h-4" />
@@ -183,8 +146,8 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
         </button>
         <button
           onClick={() => setActiveSection('profile')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition ${
-            activeSection === 'profile' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition ${
+            activeSection === 'profile' ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
           <Home className="w-4 h-4" />
@@ -199,51 +162,51 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
           {/* Architecture Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-              <span className="text-xs font-bold text-cyan-400 uppercase font-mono">1. Sensing Layer</span>
-              <h4 className="text-sm font-bold text-white mt-1">YF-S201 Flow Sensor</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Hall-effect turbine sensor outputting 7.5 Hz per 1 L/min on GPIO 21. Working pressure up to 1.75 MPa.
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
+              <span className="text-xs font-bold text-cyan-700 uppercase font-mono">1. Sensing Layer</span>
+              <h4 className="text-sm font-bold text-slate-900 mt-1">HC-SR04 Ultrasonic Distance</h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Ultrasonic transducer measuring water height in reservoir tank (Trig: GPIO 5, Echo: GPIO 18).
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-              <span className="text-xs font-bold text-blue-400 uppercase font-mono">2. Processing Gateway</span>
-              <h4 className="text-sm font-bold text-white mt-1">ESP32 Dual-Core SoC</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Computes pulse interrupts, samples piezoresistive pressure ADC, and publishes JSON telemetry via WiFi MQTT.
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
+              <span className="text-xs font-bold text-blue-700 uppercase font-mono">2. Processing Gateway</span>
+              <h4 className="text-sm font-bold text-slate-900 mt-1">ESP32 Dual-Core SoC</h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Computes tank level percent, integrates rate of flow, and broadcasts JSON packet over USB Serial / WebSocket.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-              <span className="text-xs font-bold text-emerald-400 uppercase font-mono">3. Actuation Layer</span>
-              <h4 className="text-sm font-bold text-white mt-1">12V Motorized Ball Valve</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Driven by optocoupled relay on GPIO 4 for physical emergency line shutoff upon leak confirmation.
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
+              <span className="text-xs font-bold text-emerald-700 uppercase font-mono">3. Alarm Layer</span>
+              <h4 className="text-sm font-bold text-slate-900 mt-1">Piezo Buzzer & WebSocket</h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Physical piezo buzzer on GPIO 19 triggers acoustic warning on overflow or sudden leak detection.
               </p>
             </div>
 
           </div>
 
           {/* ESP32 Arduino C++ Code Box */}
-          <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
-            <div className="p-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+          <div className="glass-panel rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-sm">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-bold text-white font-mono">
+                <Code2 className="w-4 h-4 text-cyan-600" />
+                <span className="text-xs font-bold text-slate-900 font-mono">
                   drop_x_esp32_firmware.ino (Arduino / PlatformIO)
                 </span>
               </div>
               <button
                 onClick={copyCode}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 transition shadow-2xs"
               >
-                {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
                 <span>{copiedCode ? 'Copied to Clipboard!' : 'Copy Code'}</span>
               </button>
             </div>
 
-            <div className="p-4 bg-slate-950 overflow-x-auto max-h-96">
+            <div className="p-4 bg-slate-900 overflow-x-auto max-h-96">
               <pre className="text-xs font-mono text-cyan-300 leading-relaxed">
                 {esp32ArduinoCode}
               </pre>
@@ -251,32 +214,32 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
           </div>
 
           {/* MQTT Configuration */}
-          <div className="glass-panel rounded-2xl p-5 border border-slate-800">
-            <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
-              <Terminal className="w-4 h-4 text-cyan-400" />
+          <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-1">
+              <Terminal className="w-4 h-4 text-cyan-600" />
               MQTT Telemetry Broker Configuration
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
+            <p className="text-xs text-slate-500 mb-4">
               Connect external hardware telemetry to the DROP X ingestion pipeline.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">MQTT Broker Host & Port</label>
+                <label className="block text-slate-700 mb-1 font-bold">MQTT Broker Host & Port</label>
                 <input
                   type="text"
                   value={mqttBroker}
                   onChange={(e) => setMqttBroker(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono"
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Telemetry Ingestion Topic</label>
+                <label className="block text-slate-700 mb-1 font-bold">Telemetry Ingestion Topic</label>
                 <input
                   type="text"
                   value={mqttTopic}
                   onChange={(e) => setMqttTopic(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono"
                 />
               </div>
             </div>
@@ -287,15 +250,15 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
 
       {/* SECTION 2: ALERT THRESHOLDS */}
       {activeSection === 'thresholds' && (
-        <form onSubmit={handleSaveSettings} className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-6">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-cyan-400" />
+        <form onSubmit={handleSaveSettings} className="glass-panel rounded-2xl p-6 border border-slate-200/90 bg-white shadow-sm space-y-6">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <Sliders className="w-4 h-4 text-cyan-600" />
             Configurable Anomaly Triggers
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">
+              <label className="block font-bold text-slate-700 mb-1">
                 Max Continuous Flow Duration (Minutes)
               </label>
               <p className="text-slate-500 mb-2">Triggers micro-leak alarm if flow does not drop to zero.</p>
@@ -305,29 +268,29 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
                 max="120"
                 value={maxContinuousFlow}
                 onChange={(e) => setMaxContinuousFlow(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">
-                Minimum Pressure Breach Floor (PSI)
+              <label className="block font-bold text-slate-700 mb-1">
+                Tank Max Height Calibration (cm)
               </label>
-              <p className="text-slate-500 mb-2">Sudden drop below this indicates pipe rupture.</p>
+              <p className="text-slate-500 mb-2">Distance from sensor to tank bottom when empty.</p>
               <input
                 type="number"
-                min="10"
-                max="40"
-                value={pressureCutoff}
-                onChange={(e) => setPressureCutoff(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                min="20"
+                max="300"
+                value={tankHeightCm}
+                onChange={(e) => setTankHeightCm(e.target.value)}
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="px-5 py-2.5 rounded-xl font-bold text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition"
+            className="px-5 py-2.5 rounded-xl font-bold text-xs bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/20 transition"
           >
             Save Threshold Limits
           </button>
@@ -336,46 +299,46 @@ void valveCallback(char* topic, byte* payload, unsigned int length) {
 
       {/* SECTION 3: PROPERTY & OCCUPANCY */}
       {activeSection === 'profile' && (
-        <form onSubmit={handleSaveSettings} className="glass-panel rounded-2xl p-6 border border-slate-800 space-y-6">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Home className="w-4 h-4 text-cyan-400" />
+        <form onSubmit={handleSaveSettings} className="glass-panel rounded-2xl p-6 border border-slate-200/90 bg-white shadow-sm space-y-6">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <Home className="w-4 h-4 text-cyan-600" />
             Household & Node Metadata
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">Property Name / Address</label>
+              <label className="block font-bold text-slate-700 mb-1">Property Name / Address</label>
               <input
                 type="text"
                 defaultValue={currentUser?.property}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">Number of Household Occupants</label>
+              <label className="block font-bold text-slate-700 mb-1">Number of Household Occupants</label>
               <input
                 type="number"
                 min="1"
                 max="12"
                 value={occupants}
                 onChange={(e) => setOccupants(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono"
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">Assigned IoT Gateway Node</label>
+              <label className="block font-bold text-slate-700 mb-1">Assigned IoT Gateway Node</label>
               <input
                 type="text"
                 disabled
                 value={currentUser?.meterId}
-                className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-500 font-mono"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 font-mono"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="px-5 py-2.5 rounded-xl font-bold text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition"
+            className="px-5 py-2.5 rounded-xl font-bold text-xs bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/20 transition"
           >
             Update Household Profile
           </button>

@@ -6,37 +6,26 @@ import {
   CheckCircle2, 
   Power, 
   Activity, 
-  Gauge, 
   RefreshCw, 
-  Sliders, 
-  Volume2, 
   Zap, 
-  Wifi, 
-  Flame, 
-  Sparkles,
-  Layers,
-  XCircle
+  Layers
 } from 'lucide-react';
 import { 
-  LineChart, 
-  Line, 
+  AreaChart, 
+  Area, 
   XAxis, 
   YAxis, 
   Tooltip, 
   ResponsiveContainer, 
-  CartesianGrid, 
-  Legend 
+  CartesianGrid
 } from 'recharts';
 
 export const LeakDetection = () => {
   const { 
     scenario, 
     switchScenario, 
-    valveState, 
-    toggleValve, 
     emergencyShutoff, 
     flowRate, 
-    pressure, 
     detectedAnomaly,
     realtimeHistory 
   } = useWater();
@@ -48,43 +37,39 @@ export const LeakDetection = () => {
   const zoneSensors = [
     { 
       id: 'Z1', 
-      name: 'Main Baseway Inflow (Zone 1)', 
-      flowSensor: 'YF-S201 #01', 
-      pressure: `${pressure.toFixed(1)} PSI`,
+      name: 'Main Tank Ultrasonic Inflow (Zone 1)', 
+      flowSensor: 'HC-SR04 Sensor Node #01', 
+      level: `82% Capacity`,
       status: scenario === 'BURST_PIPE' ? 'CRITICAL_LEAK' : 'OPTIMAL',
-      vibration: scenario === 'BURST_PIPE' ? 'High Acoustic Hiss' : 'Normal Low',
-      valve: valveState
+      vibration: scenario === 'BURST_PIPE' ? 'High Volume Surge' : 'Normal Baseline'
     },
     { 
       id: 'Z2', 
-      name: 'Master Ensuite & Geyser (Zone 2)', 
-      flowSensor: 'Hall Effect #02', 
-      pressure: `${(pressure - 1.5).toFixed(1)} PSI`,
+      name: 'Master Ensuite Tank (Zone 2)', 
+      flowSensor: 'HC-SR04 Sensor Node #02', 
+      level: `64% Capacity`,
       status: scenario === 'MICRO_LEAK' ? 'SLOW_TRICKLE' : 'OPTIMAL',
-      vibration: scenario === 'MICRO_LEAK' ? 'Intermittent Flow' : 'Quiescent',
-      valve: 'OPEN'
+      vibration: scenario === 'MICRO_LEAK' ? 'Intermittent Flow' : 'Quiescent'
     },
     { 
       id: 'Z3', 
-      name: 'Kitchen & Dishwasher (Zone 3)', 
-      flowSensor: 'Hall Effect #03', 
-      pressure: `${(pressure - 0.8).toFixed(1)} PSI`,
+      name: 'Kitchen Storage Unit (Zone 3)', 
+      flowSensor: 'HC-SR04 Sensor Node #03', 
+      level: `91% Capacity`,
       status: 'OPTIMAL',
-      vibration: 'Quiescent',
-      valve: 'OPEN'
+      vibration: 'Quiescent'
     },
     { 
       id: 'Z4', 
-      name: 'Outdoor Irrigation Line (Zone 4)', 
-      flowSensor: 'Brass Rotor #04', 
-      pressure: `${(pressure - 2.1).toFixed(1)} PSI`,
+      name: 'Outdoor Overhead Reserve (Zone 4)', 
+      flowSensor: 'HC-SR04 Sensor Node #04', 
+      level: `75% Capacity`,
       status: 'OPTIMAL',
-      vibration: 'Normal',
-      valve: 'OPEN'
+      vibration: 'Normal'
     },
   ];
 
-  const runPressureDecayTest = () => {
+  const runIntegrityTest = () => {
     setDiagnosticRunning(true);
     setDiagnosticResult(null);
 
@@ -94,22 +79,22 @@ export const LeakDetection = () => {
         setDiagnosticResult({
           pass: false,
           leakRate: '42.4 L/min',
-          deltaP: '34.2 PSI drop in 10s',
-          recommendation: 'Severe breach confirmed. Keep main supply isolated until physical repair.'
+          deltaP: 'Catastrophic volume decay in 10s',
+          recommendation: 'Severe breach confirmed. Check primary tank outlet immediately.'
         });
       } else if (scenario === 'MICRO_LEAK') {
         setDiagnosticResult({
           pass: false,
           leakRate: '1.85 L/min',
-          deltaP: '4.8 PSI decay over 30s',
-          recommendation: 'Small constant drain detected. Check flapper valve in Master Bath.'
+          deltaP: 'Continuous un-replenished drop over 30s',
+          recommendation: 'Small constant drain detected mathematically via ultrasonic level curve.'
         });
       } else {
         setDiagnosticResult({
           pass: true,
           leakRate: '0.00 L/min',
-          deltaP: '0.0 PSI decay (Stable at 56 PSI)',
-          recommendation: 'All plumbing manifolds passed airtight acoustic and hydrostatic integrity.'
+          deltaP: '0.0 cm/s decay (Stable Level)',
+          recommendation: 'All tank levels and computed flow velocity curves passed integrity check.'
         });
       }
     }, 2200);
@@ -122,30 +107,30 @@ export const LeakDetection = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              <ShieldAlert className="w-6 h-6 text-cyan-400" />
-              AI Leak Detection & Acoustic Anomaly Guard
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <ShieldAlert className="w-6 h-6 text-cyan-600" />
+              AI Leak Detection & Ultrasonic Anomaly Guard
             </h2>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time differential pressure correlation, acoustic frequency analysis, and automated solenoid isolation.
+          <p className="text-xs text-slate-500 mt-1">
+            Real-time differential ultrasonic height telemetry, volume rate integration, and leak classification.
           </p>
         </div>
 
         {/* Quick Test Diagnostic Trigger */}
         <button
-          onClick={runPressureDecayTest}
+          onClick={runIntegrityTest}
           disabled={diagnosticRunning}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/20 transition disabled:opacity-50 self-start sm:self-auto"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/20 transition disabled:opacity-50 self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${diagnosticRunning ? 'animate-spin' : ''}`} />
-          <span>{diagnosticRunning ? 'Pressurizing Line & Testing...' : 'Run Hydrostatic Integrity Test'}</span>
+          <span>{diagnosticRunning ? 'Scanning Ultrasonic Telemetry...' : 'Run Hydrostatic Integrity Test'}</span>
         </button>
       </div>
 
       {/* ANOMALY STATUS HIGHLIGHT CARD */}
       {detectedAnomaly ? (
-        <div className="p-6 rounded-3xl bg-gradient-to-r from-rose-950 via-slate-900 to-slate-950 border border-rose-500/60 shadow-2xl shadow-rose-950/40">
+        <div className="p-6 rounded-2xl bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-white border border-rose-200 shadow-md">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             
             <div className="space-y-2">
@@ -153,19 +138,19 @@ export const LeakDetection = () => {
                 <span className="px-2.5 py-1 rounded-md bg-rose-600 text-white font-black text-xs uppercase tracking-wider animate-pulse">
                   {detectedAnomaly.severity} ANOMALY DETECTED
                 </span>
-                <span className="text-xs text-rose-300 font-mono">
+                <span className="text-xs text-rose-700 font-bold font-mono">
                   Confidence: {detectedAnomaly.confidence}%
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-xl font-bold text-slate-900">
                 {detectedAnomaly.type}
               </h3>
-              <p className="text-xs text-rose-200/90 max-w-2xl leading-relaxed">
-                Origin: <strong className="text-white">{detectedAnomaly.zone}</strong>. Rate of water loss is approximately{' '}
-                <strong className="text-white font-mono">{detectedAnomaly.estimatedLoss}</strong>.
+              <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
+                Origin: <strong className="text-slate-900">{detectedAnomaly.zone}</strong>. Rate of loss:{' '}
+                <strong className="text-rose-700 font-mono font-bold">{detectedAnomaly.estimatedLoss}</strong>.
               </p>
-              <div className="p-3 rounded-xl bg-slate-950/70 border border-rose-500/30 text-xs text-slate-300">
-                <strong className="text-rose-400">AI Remediation Guide: </strong>
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-slate-700">
+                <strong className="text-rose-700">AI Remediation Guide: </strong>
                 {detectedAnomaly.advice}
               </div>
             </div>
@@ -174,14 +159,14 @@ export const LeakDetection = () => {
             <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
               <button
                 onClick={emergencyShutoff}
-                className="px-5 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-600/40 transition flex items-center justify-center gap-2"
+                className="px-5 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/30 transition flex items-center justify-center gap-2"
               >
                 <Power className="w-4 h-4" />
-                Emergency Valve Trip
+                Trigger Emergency Cutoff
               </button>
               <button
                 onClick={() => switchScenario('NORMAL')}
-                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-semibold transition"
+                className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold transition shadow-2xs"
               >
                 Dismiss / Resolve Anomaly
               </button>
@@ -190,20 +175,20 @@ export const LeakDetection = () => {
           </div>
         </div>
       ) : (
-        <div className="p-5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
+        <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-2xs">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white">Plumbing Manifold Intact & Quiescent</h4>
-              <p className="text-xs text-slate-400 mt-0.5">
-                No differential pressure decays, micro-trickles, or pipe rupture signatures detected.
+              <h4 className="text-sm font-bold text-slate-900">Ultrasonic Telemetry Baseline Intact</h4>
+              <p className="text-xs text-slate-600 mt-0.5">
+                No un-replenished level drops, micro-trickles, or overflow risks detected.
               </p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <div className="hidden sm:flex items-center gap-2 text-xs font-mono font-bold text-emerald-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
             Active AI Sentry Guard
           </div>
         </div>
@@ -211,191 +196,176 @@ export const LeakDetection = () => {
 
       {/* DIAGNOSTIC TEST RESULT NOTIFICATION (IF TRIGGERED) */}
       {diagnosticResult && (
-        <div className={`p-4 rounded-2xl border text-xs ${
+        <div className={`p-4 rounded-2xl border text-xs shadow-xs ${
           diagnosticResult.pass 
-            ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-200'
-            : 'bg-rose-950/30 border-rose-500/40 text-rose-200'
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            : 'bg-rose-50 border-rose-200 text-rose-900'
         }`}>
           <div className="flex items-center justify-between font-bold mb-1">
             <span className="flex items-center gap-2">
-              {diagnosticResult.pass ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertTriangle className="w-4 h-4 text-rose-400" />}
-              Hydrostatic Pressure Decay Test Result: {diagnosticResult.pass ? 'PASSED (Zero Leakage)' : 'FAILED (Leakage Detected)'}
+              {diagnosticResult.pass ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-rose-600" />}
+              Ultrasonic Volume & Flow Integration Test: {diagnosticResult.pass ? 'PASSED (Zero Leakage)' : 'FAILED (Leakage Detected)'}
             </span>
             <span className="font-mono">{diagnosticResult.deltaP}</span>
           </div>
-          <p className="text-slate-300 mt-1">
+          <p className="text-slate-600 mt-1">
             Measured Leak Rate: <strong className="font-mono">{diagnosticResult.leakRate}</strong> • {diagnosticResult.recommendation}
           </p>
         </div>
       )}
 
-      {/* TWO COLUMN: Differential Pressure vs Flow Correlation + Anomaly Logic */}
+      {/* TWO COLUMN: Ultrasonic Telemetry Chart + Anomaly Logic */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Realtime Flow vs Pressure Correlation Chart */}
-        <div className="lg:col-span-2 glass-panel rounded-2xl p-5 border border-slate-800">
+        {/* Realtime Flow Stream Chart */}
+        <div className="lg:col-span-2 glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cyan-400" />
-                Differential Correlation: Flow Velocity vs Pressure
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-cyan-600" />
+                Ultrasonic Telemetry Flow Stream (L/min)
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                A sudden spike in flow coupled with a sharp drop in pressure triggers the automated rupture alarm.
+              <p className="text-xs text-slate-500 mt-0.5">
+                Mathematical derivative $dV/dt$ computed from HC-SR04 ultrasonic distance readings.
               </p>
             </div>
           </div>
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={realtimeHistory}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <AreaChart data={realtimeHistory}>
+                <defs>
+                  <linearGradient id="flowGradLeak" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis dataKey="time" stroke="#64748b" tick={{ fontSize: 10 }} />
-                <YAxis yAxisId="left" stroke="#06b6d4" tick={{ fontSize: 10 }} domain={[0, 'auto']} />
-                <YAxis yAxisId="right" orientation="right" stroke="#f43f5e" tick={{ fontSize: 10 }} domain={[0, 80]} />
+                <YAxis stroke="#0891b2" tick={{ fontSize: 10 }} domain={[0, 'auto']} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px' }} 
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#06b6d4', borderRadius: '0.75rem', fontSize: '12px', color: '#0f172a' }} 
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                <Line 
-                  yAxisId="left" 
+                <Area 
                   type="monotone" 
                   dataKey="flow" 
                   name="Flow (L/min)" 
                   stroke="#06b6d4" 
                   strokeWidth={2.5} 
-                  dot={false}
+                  fillOpacity={1}
+                  fill="url(#flowGradLeak)"
                   isAnimationActive={false}
                 />
-                <Line 
-                  yAxisId="right" 
-                  type="monotone" 
-                  dataKey="pressure" 
-                  name="Pressure (PSI)" 
-                  stroke="#f43f5e" 
-                  strokeWidth={2} 
-                  dot={false}
-                  isAnimationActive={false}
-                />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* AI Detection Criteria Explanation */}
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800 flex flex-col justify-between">
+        <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2 mb-2">
-              <Zap className="w-4 h-4 text-cyan-400" />
-              AI Leak Signatures
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-cyan-600" />
+              Ultrasonic AI Signatures
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              How DROP X separates real human water use from destructive anomalies:
+            <p className="text-xs text-slate-500 mb-4">
+              How DROP X computes flow rates and leak anomalies purely from distance readings:
             </p>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <div className="flex items-center justify-between font-bold text-cyan-400">
-                  <span>1. Pressure Decay Correlation</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-300">Piezoresistive</span>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex items-center justify-between font-bold text-cyan-700">
+                  <span>1. Height-to-Volume Integration</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-100 text-cyan-800">HC-SR04</span>
                 </div>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  High flow + high pressure = Irrigation / High tap. High flow + sudden pressure drop = Pipe Burst rupture.
+                <p className="text-slate-600 text-[11px] mt-1">
+                  Water height $H = H_{tank} - \text{Distance}$. Volume $V = A \cdot H$. Flow velocity equals derivative $dV/dt$.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <div className="flex items-center justify-between font-bold text-amber-400">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex items-center justify-between font-bold text-amber-700">
                   <span>2. Unattended Continuous Drain</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300">Minimum Flow</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">Slope Analysis</span>
                 </div>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  Continuous flow between 1.0 - 2.5 L/min for &gt; 45 continuous minutes without human motion triggers micro-leak alert.
+                <p className="text-slate-600 text-[11px] mt-1">
+                  Negative height slope without active usage windows indicates silent toilet or pipe micro-leak.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                <div className="flex items-center justify-between font-bold text-emerald-400">
-                  <span>3. Nighttime Quiescent Window</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300">Diurnal Zero</span>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex items-center justify-between font-bold text-emerald-700">
+                  <span>3. Overflow & Spill Sentry</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">Threshold Alarm</span>
                 </div>
-                <p className="text-slate-400 text-[11px] mt-1">
-                  Between 02:00 AM and 04:00 AM, flow must touch absolute 0.0 L/min for at least 15 continuous minutes.
+                <p className="text-slate-600 text-[11px] mt-1">
+                  When distance drops below 5.0 cm (&gt;85% tank capacity), emergency buzzer and notifications fire.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-800 text-center">
+          <div className="mt-4 pt-3 border-t border-slate-100 text-center">
             <span className="text-[11px] text-slate-500 font-mono">
-              Model: DROPX-ISOLATION-FOREST-v2.1
+              Model: DROPX-ULTRASONIC-SOLVER-v2.4
             </span>
           </div>
         </div>
 
       </div>
 
-      {/* SENSOR NODES & VALVES GRID */}
-      <div className="glass-panel rounded-2xl p-5 border border-slate-800">
-        <h3 className="text-base font-bold text-white flex items-center gap-2 mb-1">
-          <Layers className="w-4 h-4 text-cyan-400" />
-          Zonal Sensor Manifold & Motorized Ball Valves
+      {/* SENSOR NODES GRID */}
+      <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
+        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-1">
+          <Layers className="w-4 h-4 text-cyan-600" />
+          Zonal Ultrasonic Sensor Network
         </h3>
-        <p className="text-xs text-slate-400 mb-4">
-          Status of ultrasonic flow meters and remote actuated shutoffs across residence zones.
+        <p className="text-xs text-slate-500 mb-4">
+          Status of HC-SR04 ultrasonic node array across residence storage tanks.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {zoneSensors.map((zone) => (
             <div 
               key={zone.id} 
-              className={`p-4 rounded-2xl border transition ${
+              className={`p-4 rounded-2xl border transition shadow-2xs ${
                 zone.status === 'CRITICAL_LEAK'
-                  ? 'bg-rose-950/40 border-rose-500/50'
+                  ? 'bg-rose-50 border-rose-200'
                   : zone.status === 'SLOW_TRICKLE'
-                  ? 'bg-amber-950/30 border-amber-500/50'
-                  : 'bg-slate-900/80 border-slate-800'
+                  ? 'bg-amber-50 border-amber-200'
+                  : 'bg-slate-50 border-slate-200'
               }`}
             >
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-white font-mono">{zone.id}</span>
+                <span className="font-bold text-slate-900 font-mono">{zone.id}</span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                   zone.status === 'CRITICAL_LEAK'
                     ? 'bg-rose-600 text-white animate-pulse'
                     : zone.status === 'SLOW_TRICKLE'
-                    ? 'bg-amber-600 text-slate-950'
-                    : 'bg-emerald-500/20 text-emerald-400'
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-emerald-100 text-emerald-800'
                 }`}>
                   {zone.status === 'CRITICAL_LEAK' ? 'BURST ALERT' : zone.status === 'SLOW_TRICKLE' ? 'TRICKLE LEAK' : 'STABLE'}
                 </span>
               </div>
 
-              <h4 className="text-xs font-semibold text-slate-200 mt-2 truncate">
+              <h4 className="text-xs font-bold text-slate-900 mt-2 truncate">
                 {zone.name}
               </h4>
 
-              <div className="mt-3 pt-3 border-t border-slate-800 space-y-1.5 text-[11px] text-slate-400">
+              <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-1.5 text-[11px] text-slate-600">
                 <div className="flex justify-between">
-                  <span>Telemetry:</span>
-                  <span className="text-slate-200 font-mono">{zone.flowSensor}</span>
+                  <span>Hardware Node:</span>
+                  <span className="text-slate-900 font-mono font-semibold">{zone.flowSensor}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Line Pressure:</span>
-                  <span className="text-cyan-400 font-mono font-semibold">{zone.pressure}</span>
+                  <span>Calculated Level:</span>
+                  <span className="text-cyan-700 font-mono font-bold">{zone.level}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Acoustics:</span>
-                  <span className="text-slate-300">{zone.vibration}</span>
+                  <span>Telemetry State:</span>
+                  <span className="text-slate-800 font-medium">{zone.vibration}</span>
                 </div>
-              </div>
-
-              <div className="mt-4">
-                <button
-                  onClick={toggleValve}
-                  className="w-full py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition"
-                >
-                  Valve: {zone.valve}
-                </button>
               </div>
             </div>
           ))}
