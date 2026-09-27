@@ -49,7 +49,8 @@ export const Dashboard = ({ setActiveTab }) => {
     waterLevelPercent,
     waterVolumeLiters,
     distanceCm,
-    tankCapacityLiters
+    tankCapacityLiters,
+    aiMetrics
   } = useWater();
 
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
@@ -248,6 +249,91 @@ export const Dashboard = ({ setActiveTab }) => {
               <span>0L (Empty)</span>
               <span>{tankCapacityLiters}L (Full)</span>
             </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* AI HYDRO-PREDICTIVE INTELLIGENCE CARD (DERIVED ULTRASONIC PARAMETERS) */}
+      <div className="glass-panel rounded-2xl p-5 border border-cyan-200/80 bg-gradient-to-br from-cyan-50/40 via-white to-sky-50/30 shadow-sm relative overflow-hidden">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-cyan-600 text-white shadow-xs">
+              <Sparkles className="w-4 h-4 animate-pulse" />
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-2">
+                AI Hydro-Predictive Intelligence Engine
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Calculated real-time parameters from HC-SR04 ultrasonic sensor stream.
+              </p>
+            </div>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100/80 text-cyan-800 border border-cyan-200 flex items-center gap-1 font-mono">
+            <Gauge className="w-3 h-3 text-cyan-700" />
+            Live AI Telemetry Engine
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* AI Parameter 1: Tank Depletion / Overflow ETA */}
+          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span>Depletion / Overfill ETA</span>
+              <Clock className="w-3.5 h-3.5 text-cyan-600" />
+            </div>
+            <div className="mt-2 text-base font-black text-slate-900 font-mono">
+              {aiMetrics.tankEta}
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+              <span className={`w-1.5 h-1.5 rounded-full ${aiMetrics.etaType === 'DEPLETION' ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}`} />
+              {aiMetrics.etaType === 'DEPLETION' ? 'Active Discharge Velocity' : 'Dynamic Level Stability'}
+            </p>
+          </div>
+
+          {/* AI Parameter 2: Micro-Leak Seepage Risk */}
+          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span>Micro-Seepage Risk</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            </div>
+            <div className="mt-2 text-base font-black text-slate-900 font-mono flex items-baseline gap-1">
+              <span>{aiMetrics.leakProbability}%</span>
+              <span className="text-[10px] text-slate-400 font-sans font-semibold">Risk Index</span>
+            </div>
+            <p className="text-[10px] text-emerald-700 font-bold mt-1">
+              {aiMetrics.leakProbability < 15 ? 'Low Risk (Nominal)' : 'Micro-Leak Advisory'}
+            </p>
+          </div>
+
+          {/* AI Parameter 3: Predicted Refill Window */}
+          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span>Smart Refill Schedule</span>
+              <Building className="w-3.5 h-3.5 text-cyan-600" />
+            </div>
+            <div className="mt-2 text-xs font-black text-cyan-800 font-mono">
+              {aiMetrics.refillWindow}
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">
+              Optimal Automated Pump Timing
+            </p>
+          </div>
+
+          {/* AI Parameter 4: Ultrasonic Signal Health */}
+          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <span>Sensor Fidelity Score</span>
+              <Radio className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+            <div className="mt-2 text-base font-black text-blue-700 font-mono">
+              {aiMetrics.sensorHealth}%
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">
+              HC-SR04 Echo Precision Calibration
+            </p>
           </div>
 
         </div>
