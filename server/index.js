@@ -27,20 +27,41 @@ async function findESP32Port() {
     return process.env.COM_PORT;
   }
 
-  // Find USB UART Bridge (Silicon Labs, FTDI, CH340, Arduino, ESP32)
-  const usbBridge = ports.find(p => 
+  // Filter out fake Bluetooth virtual COM ports (BTHENUM)
+  const realUsbPorts = ports.filter(p => 
+    !p.path.includes('BTHENUM') && 
+    !(p.manufacturer && p.manufacturer.includes('Microsoft')) &&
+    !(p.pnpId && p.pnpId.includes('BTHENUM'))
+  );
+
+  // 1. Match known USB UART Bridge chips (Silicon Labs, FTDI, CH340, CP210x, ESP32)
+  const usbBridge = realUsbPorts.find(p => 
     (p.manufacturer && (p.manufacturer.includes('Silicon Labs') || p.manufacturer.includes('FTDI') || p.manufacturer.includes('CH340') || p.manufacturer.includes('QinHeng') || p.manufacturer.includes('Expressif'))) ||
     (p.pnpId && (p.pnpId.includes('10C4') || p.pnpId.includes('1A86') || p.pnpId.includes('0403'))) ||
     p.path.toUpperCase() === 'COM27'
   );
 
-  return usbBridge ? usbBridge.path : (ports[0] ? ports[0].path : 'COM27');
+  if (usbBridge) return usbBridge.path;
+
+  // 2. If COM27 exists in list, use it
+  const com27Port = ports.find(p => p.path.toUpperCase() === 'COM27');
+  if (com27Port) return com27Port.path;
+
+  // 3. Fallback to any real non-Bluetooth USB serial port
+  return realUsbPorts.length > 0 ? realUsbPorts[0].path : null;
 }
 
 async function initSerial() {
   if (currentSerialPort && currentSerialPort.isOpen) return;
 
   const portPath = await findESP32Port();
+
+  if (!portPath) {
+    console.log('⏳ No active USB serial device found (waiting for ESP32 wire reconnect)...');
+    scheduleReconnect();
+    return;
+  }
+
   console.log(`🔌 Attempting connection to ${portPath} @ 115200 baud...`);
 
   try {
