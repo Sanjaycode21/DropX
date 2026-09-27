@@ -206,24 +206,21 @@ export const WaterProvider = ({ children }) => {
             }
 
             // Apply values strictly without random mutation
-            if (parsedLvl !== null && !isNaN(parsedLvl)) {
-              const roundedLvl = Number(parsedLvl.toFixed(1));
-              setWaterLevelPercent(roundedLvl);
-
-              if (parsedVol === null) {
-                const derivedVol = Number(((roundedLvl / 100) * tankCapacityLiters).toFixed(2));
-                setWaterVolumeLiters(derivedVol);
-              }
-            }
-
             if (parsedVol !== null && !isNaN(parsedVol)) {
               const roundedVol = Number(parsedVol.toFixed(2));
               setWaterVolumeLiters(roundedVol);
+              setTodayUsage(roundedVol);
 
               if (parsedLvl === null) {
                 const derivedLvl = Number(((roundedVol / tankCapacityLiters) * 100).toFixed(1));
                 setWaterLevelPercent(derivedLvl);
               }
+            } else if (parsedLvl !== null && !isNaN(parsedLvl)) {
+              const roundedLvl = Number(parsedLvl.toFixed(1));
+              setWaterLevelPercent(roundedLvl);
+              const derivedVol = Number(((roundedLvl / 100) * tankCapacityLiters).toFixed(2));
+              setWaterVolumeLiters(derivedVol);
+              setTodayUsage(derivedVol);
             }
 
             if (parsedDist !== null && !isNaN(parsedDist)) {
@@ -232,6 +229,8 @@ export const WaterProvider = ({ children }) => {
 
             if (parsedFlow !== null && !isNaN(parsedFlow)) {
               setFlowRate(Number(parsedFlow.toFixed(1)));
+            } else if (parsedLvl !== null && parsedLvl > 0) {
+              setFlowRate(Number((parsedLvl * 0.15).toFixed(1)));
             }
 
             // Update real-time flow graph history point

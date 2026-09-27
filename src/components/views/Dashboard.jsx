@@ -146,98 +146,7 @@ export const Dashboard = ({ setActiveTab }) => {
         </div>
       )}
 
-      {/* SUMMARY KPI CARDS: 3 EVENLY BALANCED COLUMNS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
-        {/* Card 1: Today's Water Usage */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Today's Consumption</span>
-            <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
-              <Droplet className="w-4 h-4 fill-cyan-500/20" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
-                {todayUsage.toFixed(1)}
-              </span>
-              <span className="text-sm font-bold text-cyan-600">Liters</span>
-            </div>
-            <div className="mt-2.5 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500">Target Budget: {dailyBudget} L</span>
-              <span className={`font-bold ${isBudgetExceeded ? 'text-rose-600' : 'text-emerald-600'}`}>
-                {budgetPercent}% used
-              </span>
-            </div>
-            <div className="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden border border-slate-200/60">
-              <div 
-                className={`h-full transition-all duration-500 rounded-full ${isBudgetExceeded ? 'bg-rose-500' : 'bg-gradient-to-r from-cyan-500 to-blue-600'}`}
-                style={{ width: `${Math.min(100, budgetPercent)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Real-Time Flow Rate */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Real-Time Flow Rate</span>
-            <div className={`p-2.5 rounded-xl border shadow-2xs ${
-              flowRate > 30 
-                ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' 
-                : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-            }`}>
-              <Activity className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
-                {flowRate.toFixed(1)}
-              </span>
-              <span className="text-sm font-bold text-cyan-600">L/min</span>
-            </div>
-            <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-slate-500">
-              <span className={`w-2 h-2 rounded-full ${flowRate > 0 ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
-              <span className="font-medium">
-                {flowRate === 0 
-                  ? 'Zero Flow (Idle / Idle Tank)' 
-                  : flowRate > 30 
-                  ? 'Abnormally High Surge' 
-                  : 'Active Flow Steady'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Estimated Bill & Eco Grade */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Projected Month Bill</span>
-            <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 border border-teal-200/60 shadow-2xs">
-              <IndianRupee className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
-                ₹{projectedMonthlyCost.totalCost.toFixed(2)}
-              </span>
-              <span className="text-xs text-slate-500 font-medium">/mo</span>
-            </div>
-            <div className="mt-2.5 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500">Eco Conservation Grade:</span>
-              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 shadow-2xs">
-                Grade A-
-              </span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* DYNAMIC TANK WATER LEVEL & VOLUME INDICATOR (HC-SR04 ULTRASONIC SENSOR) */}
+      {/* DYNAMIC TANK WATER LEVEL & VOLUME INDICATOR (HC-SR04 ULTRASONIC SENSOR - TOP PROMINENT POSITION) */}
       <div className="glass-panel rounded-2xl p-6 border border-slate-200/90 bg-white shadow-sm relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           
@@ -342,6 +251,97 @@ export const Dashboard = ({ setActiveTab }) => {
           </div>
 
         </div>
+      </div>
+
+      {/* SUMMARY KPI CARDS: 3 EVENLY BALANCED COLUMNS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        {/* Card 1: Today's Water Usage */}
+        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Today's Consumption</span>
+            <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
+              <Droplet className="w-4 h-4 fill-cyan-500/20" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                {todayUsage.toFixed(1)}
+              </span>
+              <span className="text-sm font-bold text-cyan-600">Liters</span>
+            </div>
+            <div className="mt-2.5 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Target Budget: {dailyBudget} L</span>
+              <span className={`font-bold ${isBudgetExceeded ? 'text-rose-600' : 'text-emerald-600'}`}>
+                {budgetPercent}% used
+              </span>
+            </div>
+            <div className="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden border border-slate-200/60">
+              <div 
+                className={`h-full transition-all duration-500 rounded-full ${isBudgetExceeded ? 'bg-rose-500' : 'bg-gradient-to-r from-cyan-500 to-blue-600'}`}
+                style={{ width: `${Math.min(100, budgetPercent)}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Real-Time Flow Rate */}
+        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Real-Time Flow Rate</span>
+            <div className={`p-2.5 rounded-xl border shadow-2xs ${
+              flowRate > 30 
+                ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' 
+                : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+            }`}>
+              <Activity className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                {flowRate.toFixed(1)}
+              </span>
+              <span className="text-sm font-bold text-cyan-600">L/min</span>
+            </div>
+            <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-slate-500">
+              <span className={`w-2 h-2 rounded-full ${flowRate > 0 ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
+              <span className="font-medium">
+                {flowRate === 0 
+                  ? 'Zero Flow (Idle / Idle Tank)' 
+                  : flowRate > 30 
+                  ? 'Abnormally High Surge' 
+                  : 'Active Flow Steady'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Estimated Bill & Eco Grade */}
+        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Projected Month Bill</span>
+            <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 border border-teal-200/60 shadow-2xs">
+              <IndianRupee className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                ₹{projectedMonthlyCost.totalCost.toFixed(2)}
+              </span>
+              <span className="text-xs text-slate-500 font-medium">/mo</span>
+            </div>
+            <div className="mt-2.5 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Eco Conservation Grade:</span>
+              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 shadow-2xs">
+                Grade A-
+              </span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* REAL-TIME ROLLING TELEMETRY CHART: EXCLUSIVELY FLOW RATE (L/min) */}
