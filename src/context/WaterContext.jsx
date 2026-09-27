@@ -176,22 +176,33 @@ export const WaterProvider = ({ children }) => {
               } catch (err) {}
             }
 
-            // 2. Try String Regex parsing for formatted LCD outputs like: "Lvl: 0.0% Vol: 0.00L" or "Lvl:0.0% Vol:0.00L"
+            // 2. Try Regex parsing for any JSON fragments or LCD text strings
             if (parsedLvl === null) {
-              const lvlMatch = rawText.match(/Lvl:\s*([\d.]+)/i) || rawText.match(/Level:\s*([\d.]+)/i);
-              if (lvlMatch) parsedLvl = parseFloat(lvlMatch[1]);
+              const match = rawText.match(/"?water_level_percent"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/"?level_percent"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/Lvl:\s*([\d.]+)/i) || 
+                            rawText.match(/Level:\s*([\d.]+)/i);
+              if (match) parsedLvl = parseFloat(match[1]);
             }
             if (parsedVol === null) {
-              const volMatch = rawText.match(/Vol:\s*([\d.]+)/i) || rawText.match(/Volume:\s*([\d.]+)/i);
-              if (volMatch) parsedVol = parseFloat(volMatch[1]);
+              const match = rawText.match(/"?water_volume_liters"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/"?volume_liters"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/Vol:\s*([\d.]+)/i) || 
+                            rawText.match(/Volume:\s*([\d.]+)/i);
+              if (match) parsedVol = parseFloat(match[1]);
             }
             if (parsedDist === null) {
-              const distMatch = rawText.match(/Dist:\s*([\d.]+)/i) || rawText.match(/Distance:\s*([\d.]+)/i);
-              if (distMatch) parsedDist = parseFloat(distMatch[1]);
+              const match = rawText.match(/"?distance_cm"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/"?distance"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/Dist:\s*([\d.]+)/i) || 
+                            rawText.match(/Distance:\s*([\d.]+)/i);
+              if (match) parsedDist = parseFloat(match[1]);
             }
             if (parsedFlow === null) {
-              const flowMatch = rawText.match(/Flow:\s*([\d.]+)/i);
-              if (flowMatch) parsedFlow = parseFloat(flowMatch[1]);
+              const match = rawText.match(/"?flow_rate"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/"?flow"?\s*:\s*([\d.]+)/i) ||
+                            rawText.match(/Flow:\s*([\d.]+)/i);
+              if (match) parsedFlow = parseFloat(match[1]);
             }
 
             // Apply values strictly without random mutation
