@@ -279,7 +279,7 @@ export const LeakDetection = () => {
                   <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-100 text-cyan-800">HC-SR04</span>
                 </div>
                 <p className="text-slate-600 text-[11px] mt-1">
-                  Water height $H = H_{tank} - \text{Distance}$. Volume $V = A \cdot H$. Flow velocity equals derivative $dV/dt$.
+                  Water height H = H_tank - Distance. Volume V = A × H. Flow velocity equals derivative dV/dt.
                 </p>
               </div>
 

@@ -18,6 +18,8 @@ import { Reports } from './components/views/Reports';
 import { Notifications } from './components/views/Notifications';
 import { Settings } from './components/views/Settings';
 
+import { ErrorBoundary } from './components/layout/ErrorBoundary';
+
 const MainLayout = () => {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -55,7 +57,7 @@ const MainLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-[#eef1f5] text-slate-900 flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
       
       {/* Top Navbar */}
       <Navbar 
@@ -80,7 +82,9 @@ const MainLayout = () => {
 
         {/* Content View Container */}
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          {renderActiveView()}
+          <ErrorBoundary key={activeTab}>
+            {renderActiveView()}
+          </ErrorBoundary>
         </main>
 
       </div>
