@@ -205,20 +205,31 @@ export const WaterProvider = ({ children }) => {
               if (match) parsedFlow = parseFloat(match[1]);
             }
 
-            // Apply values strictly without random mutation
+            // 1. Update Water Level Percentage (%)
+            if (parsedLvl !== null && !isNaN(parsedLvl)) {
+              const roundedLvl = Number(parsedLvl.toFixed(1));
+              setWaterLevelPercent(roundedLvl);
+            } else if (parsedDist !== null && !isNaN(parsedDist) && parsedDist > 0) {
+              // Derive level % from ultrasonic distance (Max container height = 30cm)
+              const maxSensorDist = 30.0;
+              const fillHeight = Math.max(0, maxSensorDist - parsedDist);
+              const derivedLvl = Number(Math.min(100, (fillHeight / maxSensorDist) * 100).toFixed(1));
+              setWaterLevelPercent(derivedLvl);
+            } else if (parsedVol !== null && !isNaN(parsedVol)) {
+              // Prototype tank scaling (1L prototype or 500L tank)
+              const effectiveCapacity = tankCapacityLiters <= 5 ? tankCapacityLiters : 1.0;
+              const derivedLvl = Number(Math.min(100, (parsedVol / effectiveCapacity) * 100).toFixed(1));
+              setWaterLevelPercent(derivedLvl);
+            }
+
+            // 2. Update Water Volume (Liters)
             if (parsedVol !== null && !isNaN(parsedVol)) {
               const roundedVol = Number(parsedVol.toFixed(2));
               setWaterVolumeLiters(roundedVol);
               setTodayUsage(roundedVol);
-
-              if (parsedLvl === null) {
-                const derivedLvl = Number(((roundedVol / tankCapacityLiters) * 100).toFixed(1));
-                setWaterLevelPercent(derivedLvl);
-              }
             } else if (parsedLvl !== null && !isNaN(parsedLvl)) {
-              const roundedLvl = Number(parsedLvl.toFixed(1));
-              setWaterLevelPercent(roundedLvl);
-              const derivedVol = Number(((roundedLvl / 100) * tankCapacityLiters).toFixed(2));
+              const effectiveCapacity = tankCapacityLiters <= 5 ? tankCapacityLiters : 1.0;
+              const derivedVol = Number(((parsedLvl / 100) * effectiveCapacity).toFixed(2));
               setWaterVolumeLiters(derivedVol);
               setTodayUsage(derivedVol);
             }
