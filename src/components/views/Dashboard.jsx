@@ -168,10 +168,20 @@ export const Dashboard = ({ setActiveTab }) => {
                 </div>
               </div>
 
-              {/* Distance badge */}
-              <span className="px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-mono text-xs font-bold shadow-2xs">
-                Sensor Distance: {distanceCm} cm
-              </span>
+              {/* Distance badge & Tank Capacity Mode Selector */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-mono text-xs font-bold shadow-2xs">
+                  Sensor Distance: {distanceCm} cm
+                </span>
+                <button
+                  onClick={() => setTankCapacityLiters(prev => prev === 1 ? 500 : 1)}
+                  className="px-3 py-1 rounded-xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-800 font-mono text-xs font-bold transition shadow-2xs cursor-pointer flex items-center gap-1.5"
+                  title="Click to toggle between Hardware Prototype 1L container and 500L Main Tank"
+                >
+                  <Sliders className="w-3 h-3 text-cyan-600" />
+                  <span>{tankCapacityLiters <= 5 ? '⚡ 1L Prototype' : '🏠 500L Tank'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Metrics grid */}

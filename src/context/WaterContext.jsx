@@ -205,34 +205,31 @@ export const WaterProvider = ({ children }) => {
               if (match) parsedFlow = parseFloat(match[1]);
             }
 
-            // 1. Update Water Level Percentage (%)
-            if (parsedLvl !== null && !isNaN(parsedLvl)) {
-              const roundedLvl = Number(parsedLvl.toFixed(1));
-              setWaterLevelPercent(roundedLvl);
+            // 1. Water Level Percentage (%)
+            let levelPct = 0.0;
+            if (parsedLvl !== null && !isNaN(parsedLvl) && parsedLvl > 0) {
+              levelPct = Number(parsedLvl.toFixed(1));
             } else if (parsedDist !== null && !isNaN(parsedDist) && parsedDist > 0) {
-              // Derive level % from ultrasonic distance (Max container height = 30cm)
               const maxSensorDist = 30.0;
               const fillHeight = Math.max(0, maxSensorDist - parsedDist);
-              const derivedLvl = Number(Math.min(100, (fillHeight / maxSensorDist) * 100).toFixed(1));
-              setWaterLevelPercent(derivedLvl);
-            } else if (parsedVol !== null && !isNaN(parsedVol)) {
-              // Prototype tank scaling (1L prototype or 500L tank)
-              const effectiveCapacity = tankCapacityLiters <= 5 ? tankCapacityLiters : 1.0;
-              const derivedLvl = Number(Math.min(100, (parsedVol / effectiveCapacity) * 100).toFixed(1));
-              setWaterLevelPercent(derivedLvl);
+              levelPct = Number(Math.min(100, Math.max(0, (fillHeight / maxSensorDist) * 100)).toFixed(1));
+            } else if (parsedVol !== null && !isNaN(parsedVol) && parsedVol > 0) {
+              const cap = tankCapacityLiters <= 5 ? tankCapacityLiters : 1.0;
+              levelPct = Number(Math.min(100, (parsedVol / cap) * 100).toFixed(1));
             }
 
-            // 2. Update Water Volume (Liters)
-            if (parsedVol !== null && !isNaN(parsedVol)) {
-              const roundedVol = Number(parsedVol.toFixed(2));
-              setWaterVolumeLiters(roundedVol);
-              setTodayUsage(roundedVol);
-            } else if (parsedLvl !== null && !isNaN(parsedLvl)) {
-              const effectiveCapacity = tankCapacityLiters <= 5 ? tankCapacityLiters : 1.0;
-              const derivedVol = Number(((parsedLvl / 100) * effectiveCapacity).toFixed(2));
-              setWaterVolumeLiters(derivedVol);
-              setTodayUsage(derivedVol);
+            setWaterLevelPercent(levelPct);
+
+            // 2. Water Volume (Liters)
+            let volumeLiters = 0.0;
+            if (parsedVol !== null && !isNaN(parsedVol) && parsedVol > 0) {
+              volumeLiters = Number(parsedVol.toFixed(2));
+            } else if (levelPct > 0) {
+              volumeLiters = Number(((levelPct / 100) * tankCapacityLiters).toFixed(2));
             }
+
+            setWaterVolumeLiters(volumeLiters);
+            setTodayUsage(volumeLiters);
 
             if (parsedDist !== null && !isNaN(parsedDist)) {
               setDistanceCm(Number(parsedDist.toFixed(1)));
@@ -240,8 +237,8 @@ export const WaterProvider = ({ children }) => {
 
             if (parsedFlow !== null && !isNaN(parsedFlow)) {
               setFlowRate(Number(parsedFlow.toFixed(1)));
-            } else if (parsedLvl !== null && parsedLvl > 0) {
-              setFlowRate(Number((parsedLvl * 0.15).toFixed(1)));
+            } else if (levelPct > 0) {
+              setFlowRate(Number((levelPct * 0.15).toFixed(1)));
             }
 
             // Update real-time flow graph history point
