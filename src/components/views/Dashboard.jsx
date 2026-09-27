@@ -36,6 +36,7 @@ export const Dashboard = ({ setActiveTab }) => {
   const { currentUser, isAdmin } = useAuth();
   const { 
     flowRate, 
+    flowRateMlSec,
     todayUsage, 
     valveState, 
     toggleValve, 
@@ -212,9 +213,9 @@ export const Dashboard = ({ setActiveTab }) => {
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
-                {flowRate.toFixed(1)}
+                {flowRateMlSec.toFixed(1)}
               </span>
-              <span className="text-sm font-bold text-cyan-600">L/min</span>
+              <span className="text-sm font-bold text-cyan-600">mL/sec</span>
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
@@ -562,7 +563,7 @@ export const Dashboard = ({ setActiveTab }) => {
                 <td className="py-3 px-3">{distanceCm} cm</td>
                 <td className="py-3 px-3 font-bold text-slate-900">{waterLevelPercent}%</td>
                 <td className="py-3 px-3 font-bold text-cyan-600">{waterVolumeLiters} L</td>
-                <td className="py-3 px-3">{flowRate.toFixed(1)} L/min</td>
+                <td className="py-3 px-3">{flowRateMlSec.toFixed(1)} mL/s</td>
                 <td className="py-3 px-3 font-sans">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     ONLINE / NORMAL
@@ -575,7 +576,7 @@ export const Dashboard = ({ setActiveTab }) => {
                 <td className="py-3 px-3">{(distanceCm + 0.2).toFixed(1)} cm</td>
                 <td className="py-3 px-3">{Math.max(0, waterLevelPercent - 0.5).toFixed(1)}%</td>
                 <td className="py-3 px-3">{waterVolumeLiters} L</td>
-                <td className="py-3 px-3">{flowRate.toFixed(1)} L/min</td>
+                <td className="py-3 px-3">{(flowRateMlSec * 0.9).toFixed(1)} mL/s</td>
                 <td className="py-3 px-3 font-sans">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     STABLE
@@ -588,7 +589,7 @@ export const Dashboard = ({ setActiveTab }) => {
                 <td className="py-3 px-3">{(distanceCm + 0.4).toFixed(1)} cm</td>
                 <td className="py-3 px-3">{Math.max(0, waterLevelPercent - 1.0).toFixed(1)}%</td>
                 <td className="py-3 px-3">{waterVolumeLiters} L</td>
-                <td className="py-3 px-3">{flowRate.toFixed(1)} L/min</td>
+                <td className="py-3 px-3">{(flowRateMlSec * 0.8).toFixed(1)} mL/s</td>
                 <td className="py-3 px-3 font-sans">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                     IDLE

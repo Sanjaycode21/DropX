@@ -410,6 +410,7 @@ export const WaterProvider = ({ children }) => {
       toggleValve,
       emergencyShutoff,
       flowRate,
+      flowRateMlSec: Number((flowRate * (1000 / 60)).toFixed(1)),
       pressure,
       tdsQuality,
       todayUsage,
