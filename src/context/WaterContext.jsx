@@ -39,59 +39,50 @@ const INITIAL_FIXTURES = [
 export const WaterProvider = ({ children }) => {
   const [scenario, setScenario] = useState('NORMAL');
   const [valveState, setValveState] = useState('OPEN');
-  const [flowRate, setFlowRate] = useState(2.8);
+  const [flowRate, setFlowRate] = useState(0.0);
   const [pressure, setPressure] = useState(48.5);
   const [tdsQuality, setTdsQuality] = useState(142);
-  const [todayUsage, setTodayUsage] = useState(284.5);
-  const [pulseCount, setPulseCount] = useState(1420);
-  const [lastHeartbeat, setLastHeartbeat] = useState(new Date());
+  const [todayUsage, setTodayUsage] = useState(0.0);
+  const [pulseCount, setPulseCount] = useState(0);
+  const [lastHeartbeat, setLastHeartbeat] = useState(null);
   const [detectedAnomaly, setDetectedAnomaly] = useState(null);
   const [dailyBudget, setDailyBudget] = useState(450);
 
-  const [waterLevelPercent, setWaterLevelPercent] = useState(78.5);
-  const [waterVolumeLiters, setWaterVolumeLiters] = useState(392.5);
-  const [distanceCm, setDistanceCm] = useState(12.4);
+  const [waterLevelPercent, setWaterLevelPercent] = useState(0.0);
+  const [waterVolumeLiters, setWaterVolumeLiters] = useState(0.0);
+  const [distanceCm, setDistanceCm] = useState(0.0);
   const [tankCapacityLiters, setTankCapacityLiters] = useState(500);
 
   const [realtimeHistory, setRealtimeHistory] = useState([
-    { time: '17:40:00', flow: 2.8, leakRisk: 5 },
-    { time: '17:40:05', flow: 2.9, leakRisk: 5 },
-    { time: '17:40:10', flow: 2.7, leakRisk: 5 },
-    { time: '17:40:15', flow: 3.1, leakRisk: 5 },
-    { time: '17:40:20', flow: 2.8, leakRisk: 5 },
-    { time: '17:40:25', flow: 2.6, leakRisk: 5 },
-    { time: '17:40:30', flow: 2.9, leakRisk: 5 },
-    { time: '17:40:35', flow: 2.8, leakRisk: 5 },
-    { time: '17:40:40', flow: 3.0, leakRisk: 5 },
-    { time: '17:40:45', flow: 2.8, leakRisk: 5 }
+    { time: '00:00:00', flow: 0.0, leakRisk: 0 },
+    { time: '00:00:05', flow: 0.0, leakRisk: 0 },
+    { time: '00:00:10', flow: 0.0, leakRisk: 0 },
+    { time: '00:00:15', flow: 0.0, leakRisk: 0 },
+    { time: '00:00:20', flow: 0.0, leakRisk: 0 }
   ]);
 
   const [notifications, setNotifications] = useState([
     {
       id: 'n1',
       type: 'info',
-      title: 'Ultrasonic Sensor Connected',
-      message: 'HC-SR04 telemetry stream active (ws://localhost:3001).',
-      timestamp: '2 mins ago',
+      title: 'Ultrasonic Sensor Ready',
+      message: 'Awaiting HC-SR04 telemetry stream (ws://localhost:3001).',
+      timestamp: 'Just now',
       read: false
     }
   ]);
 
-  // Handle Scenario switching effect when hardware feed is idle or simulated
+  // Handle Scenario manual presets (NO random ticker)
   useEffect(() => {
-    let interval;
-    let baseFlow = 2.8;
+    let baseFlow = 0.0;
     let anomalyObj = null;
-    let targetLevel = 78.5;
 
     switch (scenario) {
       case 'SHOWER':
         baseFlow = 11.5;
-        targetLevel = 65.0;
         break;
       case 'MICRO_LEAK':
         baseFlow = 1.8;
-        targetLevel = 45.0;
         anomalyObj = {
           severity: 'WARNING',
           zone: 'Master Ensuite Tank (Zone 2)',
@@ -103,7 +94,6 @@ export const WaterProvider = ({ children }) => {
         break;
       case 'BURST_PIPE':
         baseFlow = 45.0;
-        targetLevel = 92.0;
         anomalyObj = {
           severity: 'CRITICAL',
           zone: 'Water Storage Tank (Ultrasonic Node)',
@@ -115,16 +105,13 @@ export const WaterProvider = ({ children }) => {
         break;
       case 'IRRIGATION':
         baseFlow = 22.0;
-        targetLevel = 55.0;
         break;
       case 'ECO':
         baseFlow = 1.2;
-        targetLevel = 82.0;
         break;
       case 'NORMAL':
       default:
-        baseFlow = 2.8;
-        targetLevel = 78.5;
+        baseFlow = 0.0;
         anomalyObj = null;
         break;
     }
@@ -135,47 +122,9 @@ export const WaterProvider = ({ children }) => {
 
     setFlowRate(baseFlow);
     setDetectedAnomaly(anomalyObj);
+  }, [scenario, valveState]);
 
-    // Continuous tick simulator for smooth graphs and tank level/volume updates when WebSocket is idle
-    interval = setInterval(() => {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      
-      const currentFlowNoise = baseFlow > 0 ? Number((baseFlow + (Math.random() * 0.8 - 0.4)).toFixed(1)) : 0;
-      
-      if (valveState === 'OPEN') {
-        setFlowRate(currentFlowNoise);
-        setTodayUsage(prev => Number((prev + (currentFlowNoise / 60) * 0.05).toFixed(2)));
-
-        // Gently animate water level & volume
-        setWaterLevelPercent(prev => {
-          const delta = (Math.random() * 0.4 - 0.2);
-          const nextVal = Math.min(100, Math.max(5, prev + delta));
-          const rounded = Number(nextVal.toFixed(1));
-          
-          setWaterVolumeLiters(Number(((rounded / 100) * tankCapacityLiters).toFixed(1)));
-          setDistanceCm(Number((30.0 - (rounded / 100.0) * 25.0).toFixed(1)));
-
-          return rounded;
-        });
-      } else {
-        setFlowRate(0.0);
-      }
-
-      setRealtimeHistory(prev => [
-        ...prev.slice(1),
-        {
-          time: timeStr,
-          flow: valveState === 'OPEN' ? currentFlowNoise : 0,
-          leakRisk: scenario === 'BURST_PIPE' ? 95 : scenario === 'MICRO_LEAK' ? 60 : 5
-        }
-      ]);
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, [scenario, valveState, tankCapacityLiters]);
-
-  // WebSocket listener for real ESP32 telemetry from server/index.js
+  // WebSocket listener: ONLY update when real ESP32 telemetry payloads arrive
   useEffect(() => {
     let ws;
     let reconnectTimer;
@@ -190,81 +139,125 @@ export const WaterProvider = ({ children }) => {
 
         ws.onmessage = (event) => {
           try {
-            const data = JSON.parse(event.data);
-            if (data.status === 'ERROR' || data.error) return;
+            const rawText = event.data ? event.data.toString().trim() : '';
+            if (!rawText) return;
 
             setLastHeartbeat(new Date());
 
-            // Extract sensor readings with comprehensive fallback
-            const levelPercent = data.water_level_percent ?? data.percentage ?? 0;
-            const volumeLiters = data.water_volume_liters ?? (data.water_volume_ml ? data.water_volume_ml / 1000 : 0);
-            const dist = data.distance_cm ?? data.distance ?? 0;
+            let parsedLvl = null;
+            let parsedVol = null;
+            let parsedDist = null;
+            let parsedFlow = null;
 
-            if (dist > 0) setDistanceCm(Number(dist.toFixed(1)));
-            if (levelPercent > 0) {
-              setWaterLevelPercent(Number(levelPercent.toFixed(1)));
-              setWaterVolumeLiters(Number(((levelPercent / 100) * tankCapacityLiters).toFixed(1)));
-            } else if (volumeLiters > 0) {
-              setWaterVolumeLiters(Number(volumeLiters.toFixed(1)));
-              const derivedPct = Number(((volumeLiters / tankCapacityLiters) * 100).toFixed(1));
-              setWaterLevelPercent(derivedPct);
+            // 1. Try JSON parsing
+            if (rawText.startsWith('{') && rawText.endsWith('}')) {
+              try {
+                const data = JSON.parse(rawText);
+                if (data.status === 'ERROR' || data.error) return;
+
+                if (data.water_level_percent !== undefined) parsedLvl = Number(data.water_level_percent);
+                else if (data.level_percent !== undefined) parsedLvl = Number(data.level_percent);
+                else if (data.level !== undefined) parsedLvl = Number(data.level);
+                else if (data.lvl !== undefined) parsedLvl = Number(data.lvl);
+
+                if (data.water_volume_liters !== undefined) parsedVol = Number(data.water_volume_liters);
+                else if (data.volume_liters !== undefined) parsedVol = Number(data.volume_liters);
+                else if (data.volume !== undefined) parsedVol = Number(data.volume);
+                else if (data.vol !== undefined) parsedVol = Number(data.vol);
+                else if (data.water_volume_ml !== undefined) parsedVol = Number(data.water_volume_ml) / 1000;
+
+                if (data.distance_cm !== undefined) parsedDist = Number(data.distance_cm);
+                else if (data.distance !== undefined) parsedDist = Number(data.distance);
+                else if (data.dist !== undefined) parsedDist = Number(data.dist);
+
+                if (data.flow_rate !== undefined) parsedFlow = Number(data.flow_rate);
+                else if (data.flowRate !== undefined) parsedFlow = Number(data.flowRate);
+                else if (data.flow !== undefined) parsedFlow = Number(data.flow);
+              } catch (err) {}
             }
-            
-            // Extract raw flow rate directly from hardware telemetry if available
-            const rawFlow = data.flow_rate ?? data.flowRate ?? data.flow ?? (levelPercent > 0 ? Number((levelPercent * 0.3).toFixed(1)) : 0);
-            
-            setFlowRate(Number(rawFlow.toFixed(1)));
 
-            if (volumeLiters > 0) {
-              setTodayUsage(prev => Number((prev + volumeLiters * 0.01).toFixed(2)));
+            // 2. Try String Regex parsing for formatted LCD outputs like: "Lvl: 0.0% Vol: 0.00L" or "Lvl:0.0% Vol:0.00L"
+            if (parsedLvl === null) {
+              const lvlMatch = rawText.match(/Lvl:\s*([\d.]+)/i) || rawText.match(/Level:\s*([\d.]+)/i);
+              if (lvlMatch) parsedLvl = parseFloat(lvlMatch[1]);
+            }
+            if (parsedVol === null) {
+              const volMatch = rawText.match(/Vol:\s*([\d.]+)/i) || rawText.match(/Volume:\s*([\d.]+)/i);
+              if (volMatch) parsedVol = parseFloat(volMatch[1]);
+            }
+            if (parsedDist === null) {
+              const distMatch = rawText.match(/Dist:\s*([\d.]+)/i) || rawText.match(/Distance:\s*([\d.]+)/i);
+              if (distMatch) parsedDist = parseFloat(distMatch[1]);
+            }
+            if (parsedFlow === null) {
+              const flowMatch = rawText.match(/Flow:\s*([\d.]+)/i);
+              if (flowMatch) parsedFlow = parseFloat(flowMatch[1]);
             }
 
-            setRealtimeHistory(prev => {
-              const nextTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-              const updated = [
-                ...prev.slice(1),
-                {
-                  time: nextTime,
-                  flow: Number(rawFlow.toFixed(1)),
-                  leakRisk: data.status === 'CRITICAL' ? 95 : data.status === 'HIGH' ? 60 : 5
-                }
-              ];
-              return updated;
-            });
+            // Apply values strictly without random mutation
+            if (parsedLvl !== null && !isNaN(parsedLvl)) {
+              const roundedLvl = Number(parsedLvl.toFixed(1));
+              setWaterLevelPercent(roundedLvl);
 
-            if (data.status === 'CRITICAL' || data.buzzer || levelPercent >= 85) {
+              if (parsedVol === null) {
+                const derivedVol = Number(((roundedLvl / 100) * tankCapacityLiters).toFixed(2));
+                setWaterVolumeLiters(derivedVol);
+              }
+            }
+
+            if (parsedVol !== null && !isNaN(parsedVol)) {
+              const roundedVol = Number(parsedVol.toFixed(2));
+              setWaterVolumeLiters(roundedVol);
+
+              if (parsedLvl === null) {
+                const derivedLvl = Number(((roundedVol / tankCapacityLiters) * 100).toFixed(1));
+                setWaterLevelPercent(derivedLvl);
+              }
+            }
+
+            if (parsedDist !== null && !isNaN(parsedDist)) {
+              setDistanceCm(Number(parsedDist.toFixed(1)));
+            }
+
+            if (parsedFlow !== null && !isNaN(parsedFlow)) {
+              setFlowRate(Number(parsedFlow.toFixed(1)));
+            }
+
+            // Update real-time flow graph history point
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            setRealtimeHistory(prev => [
+              ...prev.slice(1),
+              {
+                time: timeStr,
+                flow: parsedFlow !== null ? Number(parsedFlow.toFixed(1)) : 0,
+                leakRisk: (parsedLvl !== null && parsedLvl >= 85) ? 95 : 5
+              }
+            ]);
+
+            // Check overflow alerts
+            if ((parsedLvl !== null && parsedLvl >= 85) || (parsedVol !== null && parsedVol >= 425)) {
               setDetectedAnomaly({
                 severity: 'CRITICAL',
                 zone: 'Water Storage Tank (Ultrasonic Node)',
-                type: 'Critical Level Overfill / Overflow Alert',
-                estimatedLoss: `${levelPercent.toFixed(1)}% Full (Dist: ${dist.toFixed(1)}cm)`,
+                type: 'Critical Level Overfill Alert',
+                estimatedLoss: `${parsedLvl ? parsedLvl.toFixed(1) : '85+'}% Tank Level`,
                 confidence: 99.8,
-                advice: 'Tank capacity critical. Water shutoff or usage advised.'
-              });
-            } else if (data.status === 'HIGH' || levelPercent >= 70) {
-              setDetectedAnomaly({
-                severity: 'WARNING',
-                zone: 'Water Storage Tank (Ultrasonic Node)',
-                type: 'High Water Level Warning',
-                estimatedLoss: `${levelPercent.toFixed(1)}% Full`,
-                confidence: 90.0,
-                advice: 'Approaching full capacity threshold.'
+                advice: 'Storage tank at capacity limit. Please check input valve.'
               });
             } else if (scenario === 'NORMAL') {
               setDetectedAnomaly(null);
             }
-          } catch (err) {
-            // Ignore bad JSON packets
-          }
-        };
 
-        ws.onerror = () => {
-          // Reconnect on error
+          } catch (err) {
+            // Ignore malformed packets
+          }
         };
 
         ws.onclose = () => {
           reconnectTimer = setTimeout(connect, 3000);
         };
+
+        ws.onerror = () => {};
       } catch (e) {
         reconnectTimer = setTimeout(connect, 3000);
       }
@@ -276,7 +269,7 @@ export const WaterProvider = ({ children }) => {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (ws) ws.close();
     };
-  }, [tankCapacityLiters]);
+  }, [tankCapacityLiters, scenario]);
 
   const toggleValve = () => {
     if (valveState === 'OPEN') {
