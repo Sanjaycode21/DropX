@@ -89,7 +89,7 @@ export const Sidebar = ({ activeTab, setActiveTab, mobileOpen, setMobileOpen }) 
         </div>
 
         {/* Nav links */}
-        <nav className="space-y-1">
+        <nav className="space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -97,10 +97,10 @@ export const Sidebar = ({ activeTab, setActiveTab, mobileOpen, setMobileOpen }) 
               <button
                 key={item.id}
                 onClick={() => handleSelect(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition duration-150 ${
+                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-full text-xs font-bold transition duration-200 cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-600 to-sky-600 text-white shadow-md shadow-cyan-600/20'
-                    : 'text-slate-600 hover:text-cyan-700 hover:bg-cyan-50/70'
+                    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/90'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -108,7 +108,7 @@ export const Sidebar = ({ activeTab, setActiveTab, mobileOpen, setMobileOpen }) 
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${item.badgeColor}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${item.badgeColor}`}>
                     {item.badge}
                   </span>
                 )}

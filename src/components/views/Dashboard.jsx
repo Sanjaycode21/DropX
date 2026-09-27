@@ -17,7 +17,8 @@ import {
   Radio,
   Waves,
   Gauge,
-  ArrowUpRight
+  ArrowUpRight,
+  Cpu
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -147,35 +148,141 @@ export const Dashboard = ({ setActiveTab }) => {
         </div>
       )}
 
-      {/* DYNAMIC TANK WATER LEVEL & VOLUME INDICATOR (HC-SR04 ULTRASONIC SENSOR - TOP PROMINENT POSITION) */}
-      <div className="glass-panel rounded-2xl p-6 border border-slate-200/90 bg-white shadow-sm relative overflow-hidden">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          
-          {/* Left Description & Real-Time Big Metrics */}
-          <div className="space-y-4 flex-1">
+      {/* TOP STAT CARDS: 4 NEUMORPHIC CARDS WITH DARK HIGHLIGHTED LEAD CARD (SkillSet / JobGio reference style) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        {/* Card 1: Dark Neumorphic Card (Water Level Fill) */}
+        <div className="neumorphic-card-dark p-5 relative overflow-hidden flex flex-col justify-between">
+          <div>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
-                  <Waves className="w-5 h-5 text-cyan-600" />
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Water Level Fill</span>
+              <div className="p-2 rounded-xl bg-zinc-800 text-cyan-400 border border-zinc-700/60 shadow-2xs">
+                <Waves className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-white font-mono">
+                {waterLevelPercent}%
+              </span>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-xs">
+            <span className="inline-flex items-center gap-1 font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full text-[10px]">
+              <ArrowUpRight className="w-3 h-3" />
+              +1.7% from last hour
+            </span>
+            <span className="text-zinc-400 text-[10px] font-mono">Dist: {distanceCm} cm</span>
+          </div>
+        </div>
+
+        {/* Card 2: White Neumorphic Card (Current Tank Volume) */}
+        <div className="neumorphic-card p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current Volume</span>
+              <div className="p-2 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
+                <Droplet className="w-4 h-4 fill-cyan-500/20" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                {waterVolumeLiters}
+              </span>
+              <span className="text-sm font-bold text-cyan-600">Liters</span>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Tank Capacity:</span>
+            <span className="font-bold text-slate-900 font-mono">{tankCapacityLiters} L Max</span>
+          </div>
+        </div>
+
+        {/* Card 3: White Neumorphic Card (Real-Time Flow Rate) */}
+        <div className="neumorphic-card p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Real-Time Flow</span>
+              <div className={`p-2 rounded-xl border shadow-2xs ${
+                flowRate > 30 
+                  ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' 
+                  : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+              }`}>
+                <Activity className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                {flowRate.toFixed(1)}
+              </span>
+              <span className="text-sm font-bold text-cyan-600">L/min</span>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${flowRate > 0 ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
+              {flowRate === 0 ? 'Zero Flow (Idle)' : 'Active Flow'}
+            </span>
+            <span className="font-bold text-emerald-600 text-[10px]">Optimal</span>
+          </div>
+        </div>
+
+        {/* Card 4: White Neumorphic Card (Projected Month Bill) */}
+        <div className="neumorphic-card p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Projected Bill</span>
+              <div className="p-2 rounded-xl bg-teal-50 text-teal-600 border border-teal-200/60 shadow-2xs">
+                <IndianRupee className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-baseline gap-1">
+              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                ₹{projectedMonthlyCost.totalCost.toFixed(2)}
+              </span>
+              <span className="text-xs text-slate-500 font-medium">/mo</span>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Eco Grade:</span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 text-[10px]">
+              Grade A-
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* MAIN TWO-COLUMN SECTION (SkillSet / JobGio reference layout) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* LEFT COLUMN (2 Cols): STORAGE TANK VISUALIZER + LIVE TELEMETRY BAR/AREA CHART */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Storage Tank Water Level & Volume Container */}
+          <div className="neumorphic-card p-6 relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
+                  <Waves className="w-6 h-6 text-cyan-600" />
                 </div>
                 <div>
                   <h3 className="text-base font-black text-slate-900">
                     Storage Tank Water Level & Volume
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Real-time hydrostatic volume measured continuously by HC-SR04 ultrasonic sensor.
+                    Measured continuously by HC-SR04 ultrasonic distance sensor.
                   </p>
                 </div>
               </div>
 
               {/* Distance badge & Tank Capacity Mode Selector */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-3 py-1 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-mono text-xs font-bold shadow-2xs">
+                <span className="px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-mono text-xs font-bold shadow-2xs">
                   Sensor Distance: {distanceCm} cm
                 </span>
                 <button
                   onClick={() => setTankCapacityLiters(prev => prev === 1 ? 500 : 1)}
-                  className="px-3 py-1 rounded-xl bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-800 font-mono text-xs font-bold transition shadow-2xs cursor-pointer flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-full bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-800 font-mono text-xs font-bold transition shadow-2xs cursor-pointer flex items-center gap-1.5"
                   title="Click to toggle between Hardware Prototype 1L container and 500L Main Tank"
                 >
                   <Sliders className="w-3 h-3 text-cyan-600" />
@@ -184,325 +291,312 @@ export const Dashboard = ({ setActiveTab }) => {
               </div>
             </div>
 
-            {/* Metrics grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-1">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               
-              {/* Level % */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Water Level Fill</span>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-slate-900 font-mono">
-                    {waterLevelPercent}%
-                  </span>
+              {/* Metrics grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 flex-1 w-full">
+                
+                {/* Level % */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Water Level Fill</span>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-slate-900 font-mono">
+                      {waterLevelPercent}%
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-cyan-700 font-bold mt-1">
+                    {waterLevelPercent >= 85 ? 'Overfill Warning!' : waterLevelPercent >= 70 ? 'High Capacity' : 'Optimal Capacity'}
+                  </p>
                 </div>
-                <p className="text-[10px] text-cyan-700 font-bold mt-0.5">
-                  {waterLevelPercent >= 85 ? 'Overfill Warning!' : waterLevelPercent >= 70 ? 'High Capacity' : 'Optimal Capacity'}
+
+                {/* Volume Liters */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Current Volume</span>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-cyan-700 font-mono">
+                      {waterVolumeLiters}
+                    </span>
+                    <span className="text-xs font-bold text-cyan-700">Liters</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Out of {tankCapacityLiters} L Max
+                  </p>
+                </div>
+
+                {/* Tank Headroom */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 col-span-2 sm:col-span-1">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Remaining Buffer</span>
+                  <div className="mt-2 flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-emerald-700 font-mono">
+                      {(tankCapacityLiters - waterVolumeLiters).toFixed(1)}
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700">Liters</span>
+                  </div>
+                  <p className="text-[10px] text-emerald-700 font-bold mt-1">
+                    Reserve Capacity
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Visual Liquid Tank Gauge */}
+              <div className="w-full md:w-44 shrink-0 flex flex-col items-center justify-center p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="w-full flex justify-between items-center text-[10px] font-bold text-slate-500 mb-1.5 font-mono">
+                  <span>TANK LEVEL</span>
+                  <span className="text-cyan-700 font-bold">{waterLevelPercent}%</span>
+                </div>
+
+                {/* Vertical fluid container */}
+                <div className="w-full h-28 bg-slate-200/80 rounded-xl overflow-hidden relative border border-slate-300 p-1 flex items-end">
+                  <div 
+                    className={`w-full transition-all duration-700 ease-out rounded-lg relative ${
+                      waterLevelPercent >= 85
+                        ? 'bg-gradient-to-t from-rose-600 via-rose-500 to-amber-400 animate-pulse'
+                        : waterLevelPercent >= 70
+                        ? 'bg-gradient-to-t from-cyan-600 via-sky-500 to-cyan-400'
+                        : 'bg-gradient-to-t from-cyan-600 via-sky-500 to-blue-500'
+                    }`}
+                    style={{ height: `${Math.max(5, waterLevelPercent)}%` }}
+                  >
+                    <div className="absolute top-0 inset-x-0 h-1.5 bg-white/40 rounded-t-lg animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="w-full flex justify-between items-center text-[10px] text-slate-400 mt-1.5 font-mono">
+                  <span>0L (Empty)</span>
+                  <span>{tankCapacityLiters}L (Full)</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Telemetry Bar Chart (Styled in dark sleek bars matching SkillSet/Jobgio reference!) */}
+          <div className="neumorphic-card p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-cyan-600" />
+                  Live Flow Velocity Stream (HC-SR04 Telemetry)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  High-frequency ultrasonic distance sensor telemetry.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-900 text-white shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                  LIVE 1s
+                </span>
+              </div>
+            </div>
+
+            <div className="h-60 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={realtimeHistory} barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="time" stroke="#64748b" tick={{ fontSize: 10 }} />
+                  <YAxis stroke="#0891b2" tick={{ fontSize: 11 }} domain={[0, 'auto']} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#18181b', 
+                      borderColor: '#27272a', 
+                      borderRadius: '0.75rem',
+                      fontSize: '12px',
+                      color: '#ffffff',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2)'
+                    }} 
+                  />
+                  <Bar dataKey="flow" name="Flow Rate (L/min)" fill="#18181b" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN (1 Col): AI ENGINE + DEVICE CONTROLS */}
+        <div className="space-y-6">
+          
+          {/* AI Predictive Intelligence Engine Card */}
+          <div className="neumorphic-card p-6 relative overflow-hidden bg-gradient-to-br from-white via-slate-50/50 to-cyan-50/30">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-2xl bg-cyan-600 text-white shadow-sm">
+                  <Sparkles className="w-4 h-4 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 tracking-tight">
+                    AI Predictive Engine
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Ultrasonic stream analytics.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3.5">
+              
+              {/* AI Parameter 1: Tank Depletion ETA */}
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <span>Depletion / Overfill ETA</span>
+                  <Clock className="w-3.5 h-3.5 text-cyan-600" />
+                </div>
+                <div className="mt-1.5 text-sm font-black text-slate-900 font-mono">
+                  {aiMetrics.tankEta}
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${aiMetrics.etaType === 'DEPLETION' ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}`} />
+                  {aiMetrics.etaType === 'DEPLETION' ? 'Discharge Velocity' : 'Level Equilibrium'}
                 </p>
               </div>
 
-              {/* Volume Liters */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Current Volume</span>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-cyan-700 font-mono">
-                    {waterVolumeLiters}
-                  </span>
-                  <span className="text-xs font-bold text-cyan-700">Liters</span>
+              {/* AI Parameter 2: Micro-Seepage Risk */}
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <span>Micro-Seepage Risk</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                 </div>
-                <p className="text-[10px] text-slate-500 mt-0.5">
-                  Out of {tankCapacityLiters} L Tank Max
-                </p>
-              </div>
-
-              {/* Tank Headroom */}
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 col-span-2 sm:col-span-1">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Remaining Buffer</span>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-emerald-700 font-mono">
-                    {(tankCapacityLiters - waterVolumeLiters).toFixed(1)}
-                  </span>
-                  <span className="text-xs font-bold text-emerald-700">Liters</span>
+                <div className="mt-1.5 text-sm font-black text-slate-900 font-mono flex items-baseline gap-1">
+                  <span>{aiMetrics.leakProbability}%</span>
+                  <span className="text-[10px] text-slate-400 font-sans font-semibold">Risk Index</span>
                 </div>
                 <p className="text-[10px] text-emerald-700 font-bold mt-0.5">
-                  Reserve Capacity
+                  {aiMetrics.leakProbability < 15 ? 'Low Risk (Nominal)' : 'Micro-Leak Advisory'}
                 </p>
               </div>
 
-            </div>
-          </div>
-
-          {/* Right Visual Liquid Tank Bar Gauge */}
-          <div className="w-full lg:w-48 shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-50 border border-slate-200">
-            <div className="w-full flex justify-between items-center text-[10px] font-bold text-slate-500 mb-1.5 font-mono">
-              <span>TANK LEVEL</span>
-              <span className="text-cyan-700 font-bold">{waterLevelPercent}%</span>
-            </div>
-
-            {/* Vertical fluid container */}
-            <div className="w-full h-28 bg-slate-200/80 rounded-xl overflow-hidden relative border border-slate-300 p-1 flex items-end">
-              <div 
-                className={`w-full transition-all duration-700 ease-out rounded-lg relative ${
-                  waterLevelPercent >= 85
-                    ? 'bg-gradient-to-t from-rose-600 via-rose-500 to-amber-400 animate-pulse'
-                    : waterLevelPercent >= 70
-                    ? 'bg-gradient-to-t from-cyan-600 via-sky-500 to-cyan-400'
-                    : 'bg-gradient-to-t from-cyan-600 via-sky-500 to-blue-500'
-                }`}
-                style={{ height: `${Math.max(5, waterLevelPercent)}%` }}
-              >
-                {/* Surface shimmer */}
-                <div className="absolute top-0 inset-x-0 h-1.5 bg-white/40 rounded-t-lg animate-pulse" />
+              {/* AI Parameter 3: Predicted Refill Window */}
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <span>Smart Refill Schedule</span>
+                  <Building className="w-3.5 h-3.5 text-cyan-600" />
+                </div>
+                <div className="mt-1.5 text-xs font-black text-cyan-800 font-mono">
+                  {aiMetrics.refillWindow}
+                </div>
               </div>
-            </div>
 
-            <div className="w-full flex justify-between items-center text-[10px] text-slate-400 mt-1.5 font-mono">
-              <span>0L (Empty)</span>
-              <span>{tankCapacityLiters}L (Full)</span>
+              {/* AI Parameter 4: Sensor Signal Health */}
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <span>Sensor Signal Fidelity</span>
+                  <Radio className="w-3.5 h-3.5 text-blue-600" />
+                </div>
+                <div className="mt-1.5 text-sm font-black text-blue-700 font-mono">
+                  {aiMetrics.sensorHealth}% Precision
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Quick Hardware Actions Tile */}
+          <div className="neumorphic-card p-5 space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Device Controls</h4>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                onClick={toggleValve}
+                className={`py-2.5 px-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
+                  valveState === 'OPEN' 
+                    ? 'bg-slate-900 text-white hover:bg-slate-800' 
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                }`}
+              >
+                <Power className="w-3.5 h-3.5" />
+                <span>{valveState === 'OPEN' ? 'Close Valve' : 'Open Valve'}</span>
+              </button>
+              <button
+                onClick={emergencyShutoff}
+                className="py-2.5 px-3 rounded-2xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>Shutoff</span>
+              </button>
             </div>
           </div>
 
         </div>
+
       </div>
 
-      {/* AI HYDRO-PREDICTIVE INTELLIGENCE CARD (DERIVED ULTRASONIC PARAMETERS) */}
-      <div className="glass-panel rounded-2xl p-5 border border-cyan-200/80 bg-gradient-to-br from-cyan-50/40 via-white to-sky-50/30 shadow-sm relative overflow-hidden">
+      {/* THIRD ROW: HARDWARE TELEMETRY EVENT LOG TABLE (SkillSet & JobGio reference style!) */}
+      <div className="neumorphic-card p-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-600 text-white shadow-xs">
-              <Sparkles className="w-4 h-4 animate-pulse" />
-            </div>
-            <div>
-              <h3 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-2">
-                AI Hydro-Predictive Intelligence Engine
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                Calculated real-time parameters from HC-SR04 ultrasonic sensor stream.
-              </p>
-            </div>
-          </div>
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100/80 text-cyan-800 border border-cyan-200 flex items-center gap-1 font-mono">
-            <Gauge className="w-3 h-3 text-cyan-700" />
-            Live AI Telemetry Engine
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          
-          {/* AI Parameter 1: Tank Depletion / Overflow ETA */}
-          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <span>Depletion / Overfill ETA</span>
-              <Clock className="w-3.5 h-3.5 text-cyan-600" />
-            </div>
-            <div className="mt-2 text-base font-black text-slate-900 font-mono">
-              {aiMetrics.tankEta}
-            </div>
-            <p className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
-              <span className={`w-1.5 h-1.5 rounded-full ${aiMetrics.etaType === 'DEPLETION' ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}`} />
-              {aiMetrics.etaType === 'DEPLETION' ? 'Active Discharge Velocity' : 'Dynamic Level Stability'}
-            </p>
-          </div>
-
-          {/* AI Parameter 2: Micro-Leak Seepage Risk */}
-          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <span>Micro-Seepage Risk</span>
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            </div>
-            <div className="mt-2 text-base font-black text-slate-900 font-mono flex items-baseline gap-1">
-              <span>{aiMetrics.leakProbability}%</span>
-              <span className="text-[10px] text-slate-400 font-sans font-semibold">Risk Index</span>
-            </div>
-            <p className="text-[10px] text-emerald-700 font-bold mt-1">
-              {aiMetrics.leakProbability < 15 ? 'Low Risk (Nominal)' : 'Micro-Leak Advisory'}
-            </p>
-          </div>
-
-          {/* AI Parameter 3: Predicted Refill Window */}
-          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <span>Smart Refill Schedule</span>
-              <Building className="w-3.5 h-3.5 text-cyan-600" />
-            </div>
-            <div className="mt-2 text-xs font-black text-cyan-800 font-mono">
-              {aiMetrics.refillWindow}
-            </div>
-            <p className="text-[10px] text-slate-500 mt-1">
-              Optimal Automated Pump Timing
-            </p>
-          </div>
-
-          {/* AI Parameter 4: Ultrasonic Signal Health */}
-          <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              <span>Sensor Fidelity Score</span>
-              <Radio className="w-3.5 h-3.5 text-blue-600" />
-            </div>
-            <div className="mt-2 text-base font-black text-blue-700 font-mono">
-              {aiMetrics.sensorHealth}%
-            </div>
-            <p className="text-[10px] text-slate-500 mt-1">
-              HC-SR04 Echo Precision Calibration
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      {/* SUMMARY KPI CARDS: 3 EVENLY BALANCED COLUMNS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
-        {/* Card 1: Today's Water Usage */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Today's Consumption</span>
-            <div className="p-2.5 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-200/60 shadow-2xs">
-              <Droplet className="w-4 h-4 fill-cyan-500/20" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
-                {todayUsage.toFixed(1)}
-              </span>
-              <span className="text-sm font-bold text-cyan-600">Liters</span>
-            </div>
-            <div className="mt-2.5 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500">Target Budget: {dailyBudget} L</span>
-              <span className={`font-bold ${isBudgetExceeded ? 'text-rose-600' : 'text-emerald-600'}`}>
-                {budgetPercent}% used
-              </span>
-            </div>
-            <div className="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden border border-slate-200/60">
-              <div 
-                className={`h-full transition-all duration-500 rounded-full ${isBudgetExceeded ? 'bg-rose-500' : 'bg-gradient-to-r from-cyan-500 to-blue-600'}`}
-                style={{ width: `${Math.min(100, budgetPercent)}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Real-Time Flow Rate */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Real-Time Flow Rate</span>
-            <div className={`p-2.5 rounded-xl border shadow-2xs ${
-              flowRate > 30 
-                ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' 
-                : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-            }`}>
-              <Activity className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
-                {flowRate.toFixed(1)}
-              </span>
-              <span className="text-sm font-bold text-cyan-600">L/min</span>
-            </div>
-            <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-slate-500">
-              <span className={`w-2 h-2 rounded-full ${flowRate > 0 ? 'bg-cyan-500 animate-ping' : 'bg-slate-400'}`} />
-              <span className="font-medium">
-                {flowRate === 0 
-                  ? 'Zero Flow (Idle / Idle Tank)' 
-                  : flowRate > 30 
-                  ? 'Abnormally High Surge' 
-                  : 'Active Flow Steady'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Estimated Bill & Eco Grade */}
-        <div className="glass-panel-interactive rounded-2xl p-5 relative overflow-hidden bg-white">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Projected Month Bill</span>
-            <div className="p-2.5 rounded-xl bg-teal-50 text-teal-600 border border-teal-200/60 shadow-2xs">
-              <IndianRupee className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
-                ₹{projectedMonthlyCost.totalCost.toFixed(2)}
-              </span>
-              <span className="text-xs text-slate-500 font-medium">/mo</span>
-            </div>
-            <div className="mt-2.5 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500">Eco Conservation Grade:</span>
-              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 shadow-2xs">
-                Grade A-
-              </span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* REAL-TIME ROLLING TELEMETRY CHART: EXCLUSIVELY FLOW RATE (L/min) */}
-      <div className="glass-panel rounded-2xl p-5 border border-slate-200/90 bg-white shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cyan-600" />
-                Live Telemetry Stream (HC-SR04 Ultrasonic Integration)
-              </h3>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-600 animate-ping" />
-                LIVE 1s
-              </span>
-            </div>
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-cyan-600" />
+              Recent Hardware Telemetry Logs (ESP32 Node)
+            </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              High-frequency ultrasonic distance sensor telemetry continuously computing real-time water volume & flow velocity.
+              Real-time packet logs ingested over serial and WebSocket.
             </p>
           </div>
-
-          {/* Single Legend indicator */}
-          <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-800 font-semibold">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
-              <span>Flow Velocity (L/min)</span>
-            </div>
-          </div>
+          <button 
+            onClick={() => setActiveTab('reports')}
+            className="text-xs text-cyan-600 hover:text-cyan-700 font-bold"
+          >
+            Export Logs &rarr;
+          </button>
         </div>
 
-        {/* Single Axis Area Chart for Flow (L/min) */}
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={realtimeHistory}>
-              <defs>
-                <linearGradient id="flowGradLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.45}/>
-                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.02}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="time" stroke="#64748b" tick={{ fontSize: 11 }} />
-              <YAxis stroke="#0891b2" tick={{ fontSize: 11 }} domain={[0, 'auto']} label={{ value: 'L/min', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#0891b2', fontSize: '11px', fontWeight: 'bold' } }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#ffffff', 
-                  borderColor: '#06b6d4', 
-                  borderRadius: '0.75rem',
-                  fontSize: '12px',
-                  color: '#0f172a',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                }} 
-              />
-              <Area 
-                type="monotone" 
-                dataKey="flow" 
-                stroke="#06b6d4" 
-                strokeWidth={2.5}
-                fillOpacity={1} 
-                fill="url(#flowGradLight)" 
-                isAnimationActive={false}
-                name="Flow Rate (L/min)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                <th className="pb-3 px-3">Time</th>
+                <th className="pb-3 px-3">Node ID</th>
+                <th className="pb-3 px-3">Distance</th>
+                <th className="pb-3 px-3">Level Fill</th>
+                <th className="pb-3 px-3">Volume</th>
+                <th className="pb-3 px-3">Flow Rate</th>
+                <th className="pb-3 px-3">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-mono text-slate-700">
+              <tr className="hover:bg-slate-50/80 transition">
+                <td className="py-3 px-3 font-semibold text-slate-900">Just now</td>
+                <td className="py-3 px-3 font-bold text-cyan-700">ESP32-WTR-8842</td>
+                <td className="py-3 px-3">{distanceCm} cm</td>
+                <td className="py-3 px-3 font-bold text-slate-900">{waterLevelPercent}%</td>
+                <td className="py-3 px-3 font-bold text-cyan-600">{waterVolumeLiters} L</td>
+                <td className="py-3 px-3">{flowRate.toFixed(1)} L/min</td>
+                <td className="py-3 px-3 font-sans">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    ONLINE / NORMAL
+                  </span>
+                </td>
+              </tr>
+              <tr className="hover:bg-slate-50/80 transition">
+                <td className="py-3 px-3">15s ago</td>
+                <td className="py-3 px-3 font-bold text-cyan-700">ESP32-WTR-8842</td>
+                <td className="py-3 px-3">{(distanceCm + 0.2).toFixed(1)} cm</td>
+                <td className="py-3 px-3">{Math.max(0, waterLevelPercent - 0.5).toFixed(1)}%</td>
+                <td className="py-3 px-3">{waterVolumeLiters} L</td>
+                <td className="py-3 px-3">{flowRate.toFixed(1)} L/min</td>
+                <td className="py-3 px-3 font-sans">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    STABLE
+                  </span>
+                </td>
+              </tr>
+              <tr className="hover:bg-slate-50/80 transition">
+                <td className="py-3 px-3">30s ago</td>
+                <td className="py-3 px-3 font-bold text-cyan-700">ESP32-WTR-8842</td>
+                <td className="py-3 px-3">{(distanceCm + 0.4).toFixed(1)} cm</td>
+                <td className="py-3 px-3">{Math.max(0, waterLevelPercent - 1.0).toFixed(1)}%</td>
+                <td className="py-3 px-3">{waterVolumeLiters} L</td>
+                <td className="py-3 px-3">{flowRate.toFixed(1)} L/min</td>
+                <td className="py-3 px-3 font-sans">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                    IDLE
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 

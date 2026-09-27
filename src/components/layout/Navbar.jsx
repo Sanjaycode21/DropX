@@ -74,27 +74,28 @@ export const Navbar = ({ activeTab, setActiveTab, onToggleMobileMenu }) => {
           </div>
         </div>
 
-        {/* Live Telemetry Pill & Clock */}
-        <div className="hidden md:flex items-center gap-4 text-xs">
-          {/* Live Clock */}
-          <div className="px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-mono flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-            <span>
-              {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-            </span>
-            <span className="text-cyan-700 font-semibold">
-              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
+        {/* Middle: Search & Neumorphic Timeframe Pills */}
+        <div className="hidden md:flex items-center gap-3">
+          
+          {/* Timeframe Selector Pills (SkillSet / JobGio reference style) */}
+          <div className="flex items-center p-1 rounded-full bg-slate-100/90 border border-slate-200/80 shadow-2xs">
+            <button className="pill-button pill-button-inactive">Day</button>
+            <button className="pill-button pill-button-inactive">Week</button>
+            <button className="pill-button pill-button-active">Month</button>
+            <button className="pill-button pill-button-inactive">Year</button>
           </div>
 
-          {/* IoT Gateway Status */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800">
-            <Wifi className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-            <span className="font-semibold text-[11px]">ESP32 Ultrasonic Node: ONLINE</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-700 font-medium">
-              99.8% RSSI
-            </span>
+          {/* Date Range Badge */}
+          <div className="hidden lg:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-bold shadow-2xs font-mono">
+            <span>{currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
           </div>
+
+          {/* IoT Gateway Status Badge */}
+          <div className="hidden xl:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold shadow-2xs">
+            <Wifi className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+            <span className="text-[11px]">ESP32 Ultrasonic: ONLINE</span>
+          </div>
+
         </div>
 
         {/* Action Controls & User Profile */}
