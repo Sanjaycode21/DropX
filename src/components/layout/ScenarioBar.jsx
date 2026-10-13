@@ -87,15 +87,15 @@ export const ScenarioBar = () => {
                 key={s.id}
                 onClick={() => switchScenario(s.id)}
                 title={s.desc}
-                className={`group flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition shrink-0 ${
+                className={`group flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-200 shrink-0 cursor-pointer ${
                   isActive
-                    ? `${s.badgeColor} ring-1 ring-cyan-500/40 shadow-xs font-bold`
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-100'
+                    ? `${s.badgeColor} ring-1 ring-cyan-500/40 shadow-xs font-bold scale-[1.02]`
+                    : 'bg-white border-slate-200/90 text-slate-600 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'scale-110 text-cyan-600' : 'text-slate-500 group-hover:text-slate-800'}`} />
+                <Icon className={`w-3.5 h-3.5 transition-transform duration-200 ${isActive ? 'scale-110 text-cyan-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
                 <span>{s.label}</span>
-                {isActive && <Check className="w-3 h-3 text-cyan-700" />}
+                {isActive && <Check className="w-3 h-3 text-cyan-700 stroke-[3]" />}
               </button>
             );
           })}
