@@ -198,7 +198,7 @@ export const Navbar = ({ activeTab, setActiveTab, onToggleMobileMenu }) => {
               />
               <div className="text-left hidden sm:block">
                 <p className="text-xs font-bold text-slate-900 leading-tight">
-                  {currentUser?.name || 'Omkar Sharma'}
+                  {currentUser?.name || 'Guest User'}
                 </p>
                 <p className="text-[10px] text-cyan-700 capitalize font-medium">
                   {currentUser?.role || 'user'} • {currentUser?.meterId || 'M-01'}

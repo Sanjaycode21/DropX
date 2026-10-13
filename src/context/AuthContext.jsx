@@ -16,7 +16,7 @@ const DEMO_ACCOUNTS = {
   user: {
     email: 'user@dropx.com',
     password: 'user123',
-    name: 'Omkar Sharma',
+    name: 'Guest User',
     role: 'user',
     property: 'Villa #42, Cyan Valley Heights',
     meterId: 'ESP32-WTR-8842',
@@ -29,7 +29,14 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem('dropx_user');
-      return saved ? JSON.parse(saved) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.name === 'Omkar Sharma') {
+          parsed.name = 'Guest User';
+        }
+        return parsed;
+      }
+      return null;
     } catch (e) {
       console.error('Failed to parse saved user', e);
       return null;
